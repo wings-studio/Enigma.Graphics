@@ -11,9 +11,11 @@ namespace Enigma.Graphics
     {
         public GraphicsDevice GraphicsDevice { protected set; get; }
         public Sdl2Window Window { protected set; get; }
+        //public Window Window { protected set; get; }
         public CommandList CommandList { protected set; get; }
+        public RgbaFloat ClearColor { set; get; } = RgbaFloat.Black;
 
-        private List<IDrawable> drawables;
+        private readonly List<IDrawable> drawables;
 
         public Application(GraphicsBackend backend = GraphicsBackend.Vulkan)
         {
@@ -34,7 +36,7 @@ namespace Enigma.Graphics
         /// </summary>
         protected virtual void InitWindow()
         {
-            WindowCreateInfo windowCI = new WindowCreateInfo()
+            WindowCreateInfo windowCI = new ()
             {
                 X = 100,
                 Y = 100,
@@ -62,20 +64,30 @@ namespace Enigma.Graphics
                 Window.PumpEvents();
 
                 if (Window.Exists)
+                {
+                    BeginDraw();
                     Draw();
+                    EndDraw();
+                }
             }
         }
 
-        public virtual void Draw()
+        public virtual void BeginDraw()
         {
             CommandList.Begin();
 
             CommandList.SetFramebuffer(GraphicsDevice.SwapchainFramebuffer);
-            CommandList.ClearColorTarget(0, RgbaFloat.Black);
+            CommandList.ClearColorTarget(0, ClearColor);
+        }
 
+        public virtual void Draw()
+        {
             foreach (IDrawable drawable in drawables)
                 drawable.Draw(CommandList);
+        }
 
+        public virtual void EndDraw()
+        {
             CommandList.End();
             GraphicsDevice.SubmitCommands(CommandList);
 
