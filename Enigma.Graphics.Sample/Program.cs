@@ -1,7 +1,5 @@
-﻿using System.Runtime.InteropServices;
-using System.Numerics;
+﻿using System.Numerics;
 using Veldrid;
-using System.Linq;
 
 namespace Enigma.Graphics.Sample
 {
@@ -9,14 +7,7 @@ namespace Enigma.Graphics.Sample
     {
         static void Main(string[] args)
         {
-            SampleApp app;
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                app = new SampleApp(GraphicsBackend.Direct3D11);
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                app = new SampleApp(GraphicsBackend.Metal);
-            else
-                app = new SampleApp(args.Contains("-vulkan") ? GraphicsBackend.Vulkan : GraphicsBackend.OpenGL);
+            using SampleApp app = new (Veldrid.StartupUtilities.VeldridStartup.GetPlatformDefaultBackend());
 
             app.Window.Title = $"Enigma Graphics Sample using {app.GraphicsDevice.BackendType} Graphics API";
 
@@ -35,7 +26,6 @@ namespace Enigma.Graphics.Sample
             app.AddDrawable(quad);
 
             app.Run();
-            app.Dispose();
         }
     }
 }

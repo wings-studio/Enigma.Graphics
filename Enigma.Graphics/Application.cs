@@ -2,16 +2,13 @@
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using Veldrid;
-using Veldrid.Sdl2;
-using Veldrid.StartupUtilities;
 
 namespace Enigma.Graphics
 {
-    public class Application : System.IDisposable
+    public abstract class Application : System.IDisposable
     {
         public GraphicsDevice GraphicsDevice { protected set; get; }
-        public Sdl2Window Window { protected set; get; }
-        //public Window Window { protected set; get; }
+        public IWindow Window { protected set; get; }
         public CommandList CommandList { protected set; get; }
         public RgbaFloat ClearColor { set; get; } = RgbaFloat.Black;
 
@@ -26,7 +23,7 @@ namespace Enigma.Graphics
                 PreferStandardClipSpaceYDirection = true,
                 PreferDepthRangeZeroToOne = true
             };
-            GraphicsDevice = VeldridStartup.CreateGraphicsDevice(Window, options, backend);
+            GraphicsDevice = Window.CreateGraphicsDevice(options, backend);
 
             drawables = new List<IDrawable>();
         }
@@ -34,20 +31,7 @@ namespace Enigma.Graphics
         /// <summary>
         /// Create <see cref="Window"/> before creating of <see cref="GraphicsDevice"/>
         /// </summary>
-        protected virtual void InitWindow()
-        {
-            WindowCreateInfo windowCI = new ()
-            {
-                X = 100,
-                Y = 100,
-                WindowWidth = 960,
-                WindowHeight = 540,
-                WindowTitle = "Enigma Application"
-            };
-            Window = VeldridStartup.CreateWindow(ref windowCI);
-
-            Window.Resized += OnResized;
-        }
+        protected abstract void InitWindow();
 
         public void AddDrawable(IDrawable drawable)
         {
@@ -61,7 +45,7 @@ namespace Enigma.Graphics
 
             while (Window.Exists)
             {
-                Window.PumpEvents();
+                Window.Update();
 
                 if (Window.Exists)
                 {
@@ -97,11 +81,6 @@ namespace Enigma.Graphics
         public void Exit()
         {
             Window?.Close();
-        }
-
-        protected virtual void OnResized()
-        {
-            // while nothing
         }
 
         public void Dispose()
