@@ -9,7 +9,7 @@ namespace Enigma.Graphics.Sample
         {
             using SampleApp app = new (Veldrid.StartupUtilities.VeldridStartup.GetPlatformDefaultBackend());
 
-            app.Window.Title = $"Enigma Graphics Sample using {app.GraphicsDevice.BackendType} Graphics API";
+            app.Window.Title = $"Enigma Graphics Sample using {app.Scene.GraphicsDevice.BackendType} Graphics API";
 
             Quad quad = new (
                 new VertexPositionColor(new Vector2(0, 1), RgbaFloat.Red),

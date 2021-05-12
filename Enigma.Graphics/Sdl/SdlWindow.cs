@@ -12,6 +12,9 @@ namespace Enigma.Graphics.Sdl
         public bool MouseVisible { get => window.CursorVisible; set => window.CursorVisible = value; }
         public bool Exists => window.Exists;
 
+        public int Width { get => window.Width; set => window.Width = value; }
+        public int Height { get => window.Height; set => window.Height = value; }
+
         public event Action OnResized { add => window.Resized += value; remove => window.Resized -= value; }
         public event Action OnClosing { add => window.Closing += value; remove => window.Closing -= value; }
         public event Action OnClosed { add => window.Closed += value; remove => window.Closed -= value; }
@@ -23,7 +26,7 @@ namespace Enigma.Graphics.Sdl
             window = VeldridStartup.CreateWindow(wci);
         }
 
-        public SdlWindow() : this(new WindowCreateInfo() { WindowHeight = 500, WindowWidth = 1000, X = 0, Y = 0 })
+        public SdlWindow() : this(new WindowCreateInfo() { WindowHeight = 500, WindowWidth = 1000, X = 50, Y = 50 })
         { }
 
         public void Close()

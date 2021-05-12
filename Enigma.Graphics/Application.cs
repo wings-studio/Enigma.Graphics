@@ -7,25 +7,14 @@ namespace Enigma.Graphics
 {
     public abstract class Application : System.IDisposable
     {
-        public GraphicsDevice GraphicsDevice { protected set; get; }
+        public Scene Scene { protected set; get; }
         public IWindow Window { protected set; get; }
-        public CommandList CommandList { protected set; get; }
-        public RgbaFloat ClearColor { set; get; } = RgbaFloat.Black;
-
-        private readonly List<IDrawable> drawables;
 
         public Application(GraphicsBackend backend = GraphicsBackend.Vulkan)
         {
             InitWindow();
 
-            GraphicsDeviceOptions options = new GraphicsDeviceOptions
-            {
-                PreferStandardClipSpaceYDirection = true,
-                PreferDepthRangeZeroToOne = true
-            };
-            GraphicsDevice = Window.CreateGraphicsDevice(options, backend);
-
-            drawables = new List<IDrawable>();
+            Scene = new Scene(Window, backend);
         }
 
         /// <summary>
@@ -34,48 +23,21 @@ namespace Enigma.Graphics
         protected abstract void InitWindow();
 
         public void AddDrawable(IDrawable drawable)
-        {
-            drawable.CreateResources(GraphicsDevice);
-            drawables.Add(drawable);
-        }
+            => Scene.AddDrawable(drawable);
 
         public virtual void Run()
         {
-            CommandList = GraphicsDevice.ResourceFactory.CreateCommandList();
-
             while (Window.Exists)
             {
                 Window.Update();
 
                 if (Window.Exists)
                 {
-                    BeginDraw();
-                    Draw();
-                    EndDraw();
+                    Scene.BeginDraw();
+                    Scene.Draw();
+                    Scene.EndDraw();
                 }
             }
-        }
-
-        public virtual void BeginDraw()
-        {
-            CommandList.Begin();
-
-            CommandList.SetFramebuffer(GraphicsDevice.SwapchainFramebuffer);
-            CommandList.ClearColorTarget(0, ClearColor);
-        }
-
-        public virtual void Draw()
-        {
-            foreach (IDrawable drawable in drawables)
-                drawable.Draw(CommandList);
-        }
-
-        public virtual void EndDraw()
-        {
-            CommandList.End();
-            GraphicsDevice.SubmitCommands(CommandList);
-
-            GraphicsDevice.SwapBuffers();
         }
 
         public void Exit()
@@ -85,11 +47,7 @@ namespace Enigma.Graphics
 
         public void Dispose()
         {
-            foreach (IDrawable drawable in drawables)
-                drawable.Dispose();
-
-            CommandList.Dispose();
-            GraphicsDevice.Dispose();
+            Scene.Dispose();
         }
 
         public Stream OpenResourcesStream(string name) => GetType().Assembly.GetManifestResourceStream(name);

@@ -9,6 +9,8 @@ namespace Enigma.Graphics
         string Title { set; get; }
         WindowState State { set; get; }
         bool MouseVisible { set; get; }
+        int Width { set; get; }
+        int Height { set; get; }
 
         bool Exists { get; }
 
