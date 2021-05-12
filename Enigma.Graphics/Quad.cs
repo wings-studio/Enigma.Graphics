@@ -7,7 +7,7 @@ using Veldrid.SPIRV;
 
 namespace Enigma.Graphics
 {
-    public class Quad : IDrawable
+    public class Quad : IRenderable
     {
         private DeviceBuffer _vertexBuffer, _indexBuffer;
         private Pipeline _pipeline;

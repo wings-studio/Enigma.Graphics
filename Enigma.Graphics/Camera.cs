@@ -5,7 +5,7 @@ using Veldrid;
 
 namespace Enigma.Graphics
 {
-    public class Camera
+    public class Camera : IUpdateable
     {
         private float _fov = 1f;
         private float _near = 1f;
@@ -99,6 +99,11 @@ namespace Enigma.Graphics
             CameraPosition_WorldSpace = _position,
             CameraLookDirection = _lookDirection
         };
+
+        public void Update(float deltaTime)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]

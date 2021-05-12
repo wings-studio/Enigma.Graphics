@@ -22,8 +22,8 @@ namespace Enigma.Graphics.Sample
                 new VertexPositionColor(new Vector2(-.75f, -.75f), RgbaFloat.Pink),
                 new VertexPositionColor(new Vector2(.75f, -.75f), RgbaFloat.CornflowerBlue));
 
-            app.AddDrawable(quad1);
-            app.AddDrawable(quad);
+            app.AddRenderable(quad1);
+            app.AddRenderable(quad);
 
             app.Run();
         }
