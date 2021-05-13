@@ -57,13 +57,14 @@ namespace Enigma.Graphics
         public static (Shader vs, Shader fs) GetShaders(
             GraphicsDevice gd,
             ResourceFactory factory,
-            string name)
+            string name,
+            bool fromResources = true)
         {
             SpecializationConstant[] constants = ShaderHelper.GetSpecializations(gd);
             ShaderSetCacheKey cacheKey = new ShaderSetCacheKey(name, constants);
             if (!s_shaderSets.TryGetValue(cacheKey, out (Shader vs, Shader fs) set))
             {
-                set = ShaderHelper.LoadSPIRV(gd, factory, name);
+                set = ShaderHelper.LoadSPIRV(gd, factory, name, fromResources);
                 s_shaderSets.Add(cacheKey, set);
             }
 

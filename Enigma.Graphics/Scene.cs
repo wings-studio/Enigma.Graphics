@@ -1,5 +1,4 @@
-﻿using ImGuiNET;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,7 +11,7 @@ using Veldrid;
 
 namespace Enigma.Graphics
 {
-    public class Scene
+    public sealed class Scene
     {
         private readonly Octree<CullRenderable> _octree
             = new Octree<CullRenderable>(new BoundingBox(Vector3.One * -50, Vector3.One * 50), 2);

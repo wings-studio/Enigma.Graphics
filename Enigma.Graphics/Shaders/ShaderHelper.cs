@@ -8,13 +8,19 @@ namespace Enigma.Graphics.Shaders
 {
     public static class ShaderHelper
     {
+        public static string ShadersFolder = "Shaders";
+        public static string ShadersGenFolder = "Shaders.Generated";
+
         public static (Shader vs, Shader fs) LoadSPIRV(
             GraphicsDevice gd,
             ResourceFactory factory,
-            string setName)
+            string setName,
+            bool fromResources = false)
         {
-            byte[] vsBytes = LoadBytecode(GraphicsBackend.Vulkan, setName, ShaderStages.Vertex);
-            byte[] fsBytes = LoadBytecode(GraphicsBackend.Vulkan, setName, ShaderStages.Fragment);
+            byte[] vsBytes = fromResources ? LoadBytecodeFromResources(GraphicsBackend.Vulkan, setName, ShaderStages.Vertex)
+                : LoadBytecode(GraphicsBackend.Vulkan, setName, ShaderStages.Vertex);
+            byte[] fsBytes = fromResources ? LoadBytecodeFromResources(GraphicsBackend.Vulkan, setName, ShaderStages.Fragment)
+                : LoadBytecode(GraphicsBackend.Vulkan, setName, ShaderStages.Fragment);
             bool debug = false;
 #if DEBUG
             debug = true;
@@ -33,7 +39,7 @@ namespace Enigma.Graphics.Shaders
             return (vs, fs);
         }
 
-        private static CrossCompileOptions GetOptions(GraphicsDevice gd)
+        public static CrossCompileOptions GetOptions(GraphicsDevice gd)
         {
             SpecializationConstant[] specializations = GetSpecializations(gd);
 
@@ -69,7 +75,7 @@ namespace Enigma.Graphics.Shaders
             if (backend == GraphicsBackend.Vulkan || backend == GraphicsBackend.Direct3D11)
             {
                 string bytecodeExtension = GetBytecodeExtension(backend);
-                string bytecodePath = AssetHelper.GetPath(Path.Combine("Shaders", name + bytecodeExtension));
+                string bytecodePath = Path.Combine(ShadersFolder, name + bytecodeExtension);
                 if (File.Exists(bytecodePath))
                 {
                     return File.ReadAllBytes(bytecodePath);
@@ -77,11 +83,28 @@ namespace Enigma.Graphics.Shaders
             }
 
             string extension = GetSourceExtension(backend);
-            string path = AssetHelper.GetPath(Path.Combine("Shaders.Generated", name + extension));
+            string path = Path.Combine(ShadersGenFolder, name + extension);
             return File.ReadAllBytes(path);
         }
+        
+        public static byte[] LoadBytecodeFromResources(GraphicsBackend backend, string setName, ShaderStages stage)
+        {
+            string stageExt = stage == ShaderStages.Vertex ? "vert" : "frag";
+            string name = setName + "_" + stageExt;
 
-        private static string GetBytecodeExtension(GraphicsBackend backend)
+            if (backend == GraphicsBackend.Vulkan || backend == GraphicsBackend.Direct3D11)
+            {
+                string bytecodeExtension = GetBytecodeExtension(backend);
+                string bytecodePath = name + bytecodeExtension;
+                return Util.ReadBytesFromResources(bytecodePath);
+            }
+
+            string extension = GetSourceExtension(backend);
+            string path = name + extension;
+            return Util.ReadBytesFromResources(path);
+        }
+
+        public static string GetBytecodeExtension(GraphicsBackend backend)
         {
             switch (backend)
             {
@@ -93,7 +116,7 @@ namespace Enigma.Graphics.Shaders
             }
         }
 
-        private static string GetSourceExtension(GraphicsBackend backend)
+        public static string GetSourceExtension(GraphicsBackend backend)
         {
             switch (backend)
             {

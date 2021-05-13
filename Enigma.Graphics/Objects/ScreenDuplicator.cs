@@ -4,7 +4,7 @@ using Veldrid;
 
 namespace Enigma.Graphics
 {
-    internal class ScreenDuplicator : IRenderable
+    public class ScreenDuplicator : IRenderable
     {
         private DisposeCollector _disposeCollector;
         private Pipeline _pipeline;

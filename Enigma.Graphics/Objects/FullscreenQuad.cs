@@ -6,7 +6,7 @@ using Enigma.Graphics.Shaders;
 
 namespace Enigma.Graphics
 {
-    internal class FullScreenQuad : IRenderable
+    public class FullScreenQuad : IRenderable
     {
         private DisposeCollector _disposeCollector;
         private Pipeline _pipeline;

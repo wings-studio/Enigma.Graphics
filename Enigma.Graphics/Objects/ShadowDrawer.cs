@@ -9,7 +9,7 @@ namespace Enigma.Graphics
 {
     public class ShadowmapDrawer : IRenderable
     {
-        private readonly Func<Sdl2Window> _windowGetter;
+        private readonly Func<IWindow> _windowGetter;
         private readonly DisposeCollector _disposeCollector = new DisposeCollector();
 
         private DeviceBuffer _vb;
@@ -35,7 +35,7 @@ namespace Enigma.Graphics
             _si = new SizeInfo { Size = _size, Position = _position };
         }
 
-        public ShadowmapDrawer(Func<Sdl2Window> windowGetter, Func<TextureView> bindingGetter)
+        public ShadowmapDrawer(Func<IWindow> windowGetter, Func<TextureView> bindingGetter)
         {
             _windowGetter = windowGetter;
             OnWindowResized();

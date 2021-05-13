@@ -1,19 +1,21 @@
 ﻿using System;
+using System.IO;
 using System.Numerics;
+using System.Resources;
 using Veldrid;
 using Veldrid.Utilities;
 
 namespace Enigma.Graphics
 {
-    internal static class Util
+    public static class Util
     {
-        internal static uint SizeInBytes<T>(this T[] array) where T : struct
+        public static uint SizeInBytes<T>(this T[] array) where T : struct
         {
             return (uint)(array.Length * System.Runtime.CompilerServices.Unsafe.SizeOf<T>());
         }
 
         // Code adapted from https://bitbucket.org/sinbad/ogre/src/9db75e3ba05c/OgreMain/include/OgreVector3.h
-        internal static Quaternion FromToRotation(Vector3 from, Vector3 to, Vector3 fallbackAxis = default(Vector3))
+        public static Quaternion FromToRotation(Vector3 from, Vector3 to, Vector3 fallbackAxis = default(Vector3))
         {
             // Based on Stan Melax's article in Game Programming Gems
             Quaternion q;
@@ -85,13 +87,6 @@ namespace Enigma.Graphics
             projection.M32 = c.Y;
             projection.M33 = c.Z;
             projection.M34 = c.W;
-        }
-
-        private static float sgn(float x)
-        {
-            if (x > 0) return 1;
-            else if (x < 0) return -1;
-            else return 0;
         }
 
         public static Matrix4x4 Inverse(this Matrix4x4 src)
@@ -211,6 +206,14 @@ namespace Enigma.Graphics
                         -1, -1, 0, 1
                 };
             }
+        }
+
+        internal static Stream OpenResourcesStream() 
+            => typeof(Util).Assembly.GetManifestResourceStream(typeof(Util).Assembly.GetManifestResourceNames()[0]);
+
+        internal static byte[] ReadBytesFromResources(string name)
+        {
+            return (byte[])Properties.Resources.ResourceManager.GetObject(name);
         }
     }
 }

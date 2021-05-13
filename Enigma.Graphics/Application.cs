@@ -1,52 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Numerics;
-using System.Runtime.Serialization.Formatters.Binary;
 using Veldrid;
 using Veldrid.ImageSharp;
 using Veldrid.Utilities;
 
 namespace Enigma.Graphics
 {
-    public abstract class Application : System.IDisposable
+    public abstract class Application : IDisposable
     {
         public Scene Scene { protected set; get; }
         public IWindow Window { protected set; get; }
+        public GraphicsDevice GraphicsDevice { protected set; get; }
 
-        private GraphicsDevice _gd;
-        private readonly SceneContext _sc = new SceneContext();
-        private bool _windowResized;
-        //private RenderOrderKeyComparer _renderOrderKeyComparer = new RenderOrderKeyComparer();
-        private bool _recreateWindow = true;
+        protected readonly SceneContext _sc = new ();
+        protected bool _windowResized;
+        protected RenderOrderKeyComparer _renderOrderKeyComparer = new ();
+        protected bool _recreateWindow = true;
 
-        private static double _desiredFrameLengthSeconds = 1.0 / 60.0;
-        private static bool _limitFrameRate = false;
-        //private static FrameTimeAverager _fta = new FrameTimeAverager(0.666);
-        private CommandList _frameCommands;
+        protected static double _desiredFrameLengthSeconds = 1.0 / 60.0;
+        protected static bool _limitFrameRate = false;
+        protected static FrameTimeAverager _fta = new (0.666);
+        protected CommandList _frameCommands;
 
-        private event Action<int, int> _resizeHandled;
+        protected event Action<int, int> _resizeHandled;
 
-        private readonly string[] _msaaOptions = new string[] { "Off", "2x", "4x", "8x", "16x", "32x" };
-        private int _msaaOption = 0;
-        private TextureSampleCount? _newSampleCount;
+        protected TextureSampleCount? _newSampleCount;
 
-        private readonly Dictionary<string, ImageSharpTexture> _textures = new Dictionary<string, ImageSharpTexture>();
+        protected readonly Dictionary<string, ImageSharpTexture> _textures = new ();
 
         public Application(GraphicsBackend backend = GraphicsBackend.Vulkan)
         {
             InitWindow();
 
-            GraphicsDeviceOptions gdOptions = new GraphicsDeviceOptions(false, null, false, ResourceBindingModel.Improved, true, true, true);
+            GraphicsDeviceOptions gdOptions = new (false, null, false, ResourceBindingModel.Improved, true, true, true);
 #if DEBUG
             gdOptions.Debug = true;
 #endif
-            Scene = new Scene(Window, Window.CreateGraphicsDevice(gdOptions, backend));
+            GraphicsDevice = Window.CreateGraphicsDevice(gdOptions, backend);
+
+            Scene = new Scene(Window, GraphicsDevice);
+            _sc.SetCurrentScene(Scene);
         }
 
         /// <summary>
-        /// Create <see cref="Window"/> before creating of <see cref="GraphicsDevice"/>
+        /// Create <see cref="Window"/> before creating of <see cref="Veldrid.GraphicsDevice"/>
         /// </summary>
         protected abstract void InitWindow();
 
@@ -84,7 +83,7 @@ namespace Enigma.Graphics
         public virtual void Run()
         {
             long previousFrameTicks = 0;
-            Stopwatch sw = new Stopwatch();
+            Stopwatch sw = new ();
             sw.Start();
             while (Window.Exists)
             {
@@ -112,9 +111,11 @@ namespace Enigma.Graphics
             sw.Stop();
         }
 
-        private void Draw()
+        protected void Draw()
         {
+#if DEBUG
             Debug.Assert(Window.Exists);
+#endif
             int width = Window.Width;
             int height = Window.Height;
 
@@ -122,14 +123,14 @@ namespace Enigma.Graphics
             {
                 _windowResized = false;
 
-                _gd.ResizeMainWindow((uint)width, (uint)height);
+                GraphicsDevice.ResizeMainWindow((uint)width, (uint)height);
                 Scene.Camera.WindowResized(width, height);
                 _resizeHandled?.Invoke(width, height);
-                CommandList cl = _gd.ResourceFactory.CreateCommandList();
+                CommandList cl = GraphicsDevice.ResourceFactory.CreateCommandList();
                 cl.Begin();
-                _sc.RecreateWindowSizedResources(_gd, cl);
+                _sc.RecreateWindowSizedResources(GraphicsDevice, cl);
                 cl.End();
-                _gd.SubmitCommands(cl);
+                GraphicsDevice.SubmitCommands(cl);
                 cl.Dispose();
             }
 
@@ -137,14 +138,14 @@ namespace Enigma.Graphics
             {
                 _sc.MainSceneSampleCount = _newSampleCount.Value;
                 _newSampleCount = null;
-                //DestroyAllObjects();
-                //CreateAllObjects();
+                DestroyAllObjects();
+                CreateAllObjects();
             }
 
             _frameCommands.Begin();
 
-            Scene.RenderAllStages(_gd, _frameCommands, _sc);
-            _gd.SwapBuffers();
+            Scene.RenderAllStages(GraphicsDevice, _frameCommands, _sc);
+            GraphicsDevice.SwapBuffers();
         }
 
         public void Exit()
@@ -152,30 +153,60 @@ namespace Enigma.Graphics
             Window?.Close();
         }
 
+        public void ChangeBackend(GraphicsBackend backend) => ChangeBackend(backend, false);
+        public void ChangeBackend(GraphicsBackend backend, bool forceRecreateWindow)
+        {
+            DestroyAllObjects();
+            bool syncToVBlank = GraphicsDevice.SyncToVerticalBlank;
+            GraphicsDevice.Dispose();
+
+            if (_recreateWindow || forceRecreateWindow)
+                InitWindow();
+
+            GraphicsDeviceOptions gdOptions = new GraphicsDeviceOptions(false, null, syncToVBlank, ResourceBindingModel.Improved, true, true, true);
+#if DEBUG
+            gdOptions.Debug = true;
+#endif
+            GraphicsDevice = Window.CreateGraphicsDevice(gdOptions, backend);
+
+            Scene.Camera.UpdateBackend(GraphicsDevice, Window);
+
+            CreateAllObjects();
+        }
+
+        protected abstract void DestroyAllDeviceObjects();
+
+        protected void DestroyAllObjects()
+        {
+            GraphicsDevice.WaitForIdle();
+            _frameCommands.Dispose();
+            _sc.DestroyDeviceObjects();
+            Scene.DestroyAllDeviceObjects();
+            DestroyAllDeviceObjects();
+            StaticResourceCache.DestroyAllDeviceObjects();
+            GraphicsDevice.WaitForIdle();
+        }
+
+        protected abstract void CreateAllDeviceObjects(CommandList cl);
+
+        protected void CreateAllObjects()
+        {
+            _frameCommands = GraphicsDevice.ResourceFactory.CreateCommandList();
+            _frameCommands.Name = "Frame Commands List";
+            CommandList initCL = GraphicsDevice.ResourceFactory.CreateCommandList();
+            initCL.Name = "Recreation Initialization Command List";
+            initCL.Begin();
+            _sc.CreateDeviceObjects(GraphicsDevice, initCL, _sc);
+            CreateAllDeviceObjects(initCL);
+            Scene.CreateAllDeviceObjects(GraphicsDevice, initCL, _sc);
+            initCL.End();
+            GraphicsDevice.SubmitCommands(initCL);
+            initCL.Dispose();
+        }
+
         public void Dispose()
         {
-            Scene.DestroyAllDeviceObjects();
-        }
-
-        public Stream OpenResourcesStream(string name) => GetType().Assembly.GetManifestResourceStream(name);
-
-        public byte[] ReadBytesFromResources(string name)
-        {
-            using (Stream stream = OpenResourcesStream(name))
-            {
-                byte[] bytes = new byte[stream.Length];
-                using (MemoryStream ms = new MemoryStream(bytes))
-                {
-                    stream.CopyTo(ms);
-                    return bytes;
-                }
-            }
-        }
-
-        public T LoadFromResources<T>(string name)
-        {
-            BinaryFormatter bf = new ();
-            return (T)bf.Deserialize(OpenResourcesStream(name));
+            DestroyAllObjects();
         }
     }
 }
