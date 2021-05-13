@@ -45,7 +45,6 @@ namespace Enigma.Graphics
         {
             _camera = new Camera(gd, window);
             _farCascadeLimit = _camera.FarDistance;
-            _updateables.Add(_camera);
         }
 
         public void AddRenderable(IRenderable r)

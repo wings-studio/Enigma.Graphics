@@ -20,7 +20,9 @@ namespace Enigma.Graphics.Sample
                 Image.Load<Rgba32>(AssetHelper.GetPath("Textures/cloudtop/cloudtop_up.png")),
                 Image.Load<Rgba32>(AssetHelper.GetPath("Textures/cloudtop/cloudtop_dn.png")));
 
-        private FullScreenQuad fsq;
+        private readonly FullScreenQuad fsq;
+
+        private Vector2 lastMousePos;
 
         public SampleApp(GraphicsBackend backend = GraphicsBackend.Vulkan) : base(backend) 
         {
@@ -31,6 +33,17 @@ namespace Enigma.Graphics.Sample
             _sc.Camera.Position = new Vector3(-80, 25, -4.3f);
             _sc.Camera.Yaw = -MathF.PI / 2;
             _sc.Camera.Pitch = -MathF.PI / 9;
+
+            Window.State = WindowState.Maximized;
+            lastMousePos = Vector2.Zero;
+            Window.SetMousePosition(lastMousePos);
+            CameraController controller = new CameraController(Scene.Camera);
+            Scene.AddUpdateable(controller);
+            Window.OnKeyUp += (e) =>
+            {
+                if (e.Key == Key.Escape)
+                    Exit();
+            };
 
             ShadowmapDrawer texDrawIndexeder = new (() => Window, () => _sc.NearShadowMapView);
             _resizeHandled += (w, h) => texDrawIndexeder.OnWindowResized();

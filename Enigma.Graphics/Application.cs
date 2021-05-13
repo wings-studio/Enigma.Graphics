@@ -13,6 +13,11 @@ namespace Enigma.Graphics
         public Scene Scene { protected set; get; }
         public IWindow Window { protected set; get; }
         public GraphicsDevice GraphicsDevice { protected set; get; }
+        /// <summary>
+        /// Time to draw one frame in seconds
+        /// </summary>
+        public float DeltaTime { protected set; get; }
+        public static FrameTimeAverager AppTime { protected set; get; }
 
         protected readonly SceneContext _sc = new ();
         protected bool _windowResized;
@@ -21,7 +26,6 @@ namespace Enigma.Graphics
 
         protected static double _desiredFrameLengthSeconds = 1.0 / 60.0;
         protected static bool _limitFrameRate = false;
-        protected static FrameTimeAverager _fta = new (0.666);
         protected CommandList _frameCommands;
 
         protected event Action<int, int> _resizeHandled;
@@ -32,6 +36,8 @@ namespace Enigma.Graphics
 
         public Application(GraphicsBackend backend = GraphicsBackend.Vulkan)
         {
+            AppTime = new FrameTimeAverager(0.660);
+
             InitWindow();
 
             GraphicsDeviceOptions gdOptions = new (false, null, false, ResourceBindingModel.Improved, true, true, true);
@@ -80,7 +86,7 @@ namespace Enigma.Graphics
             AddRenderable(mesh);
         }
 
-        public virtual void Run()
+        public void Run()
         {
             long previousFrameTicks = 0;
             Stopwatch sw = new ();
@@ -96,6 +102,8 @@ namespace Enigma.Graphics
                     deltaSeconds = (currentFrameTicks - previousFrameTicks) / (double)Stopwatch.Frequency;
                 }
 
+                DeltaTime = (float)deltaSeconds;
+
                 previousFrameTicks = currentFrameTicks;
 
                 Window.Update();
@@ -105,10 +113,21 @@ namespace Enigma.Graphics
                     break;
                 }
 
+                Update();
+
                 Draw();
             }
 
             sw.Stop();
+        }
+
+        /// <summary>
+        /// Calls every frame before <see cref="Draw"/>
+        /// </summary>
+        protected virtual void Update() 
+        {
+            Scene.Update(DeltaTime);
+            AppTime.AddTime(DeltaTime);
         }
 
         protected void Draw()

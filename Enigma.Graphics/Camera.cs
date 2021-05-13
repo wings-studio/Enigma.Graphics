@@ -5,7 +5,7 @@ using Veldrid;
 
 namespace Enigma.Graphics
 {
-    public class Camera : IUpdateable
+    public sealed class Camera
     {
         private float _fov = 1f;
         private float _near = 1f;
@@ -73,7 +73,7 @@ namespace Enigma.Graphics
             UpdatePerspectiveMatrix();
         }
 
-        private void UpdatePerspectiveMatrix()
+        public void UpdatePerspectiveMatrix()
         {
             _projectionMatrix = Util.CreatePerspective(
                 _gd,
@@ -85,7 +85,7 @@ namespace Enigma.Graphics
             ProjectionChanged?.Invoke(_projectionMatrix);
         }
 
-        private void UpdateViewMatrix()
+        public void UpdateViewMatrix()
         {
             Quaternion lookRotation = Quaternion.CreateFromYawPitchRoll(Yaw, Pitch, 0f);
             Vector3 lookDir = Vector3.Transform(-Vector3.UnitZ, lookRotation);
@@ -94,16 +94,11 @@ namespace Enigma.Graphics
             ViewChanged?.Invoke(_viewMatrix);
         }
 
-        public CameraInfo GetCameraInfo() => new CameraInfo
+        public CameraInfo GetCameraInfo() => new ()
         {
             CameraPosition_WorldSpace = _position,
             CameraLookDirection = _lookDirection
         };
-
-        public void Update(float deltaTime)
-        {
-            throw new NotImplementedException();
-        }
     }
 
     [StructLayout(LayoutKind.Sequential)]

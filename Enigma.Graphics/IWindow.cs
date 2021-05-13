@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using Veldrid;
+using Enigma.Input;
 
 namespace Enigma.Graphics
 {
-    public interface IWindow
+    public interface IWindow : IInputable
     {
         string Title { set; get; }
         WindowState State { set; get; }
-        bool MouseVisible { set; get; }
         int Width { set; get; }
         int Height { set; get; }
 
