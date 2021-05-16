@@ -6,8 +6,10 @@ using Enigma.Graphics.Shaders;
 
 namespace Enigma.Graphics
 {
-    // Non-thread-safe cache for resources.
-    internal static class StaticResourceCache
+    /// <summary>
+    /// Non-thread-safe cache for resources.
+    /// </summary>
+    public static class StaticResourceCache
     {
         private static readonly Dictionary<GraphicsPipelineDescription, Pipeline> s_pipelines
             = new Dictionary<GraphicsPipelineDescription, Pipeline>();

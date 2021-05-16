@@ -5,7 +5,7 @@ namespace Enigma.Graphics.Sample
 {
     public static class AssetHelper
     {
-        private static readonly string s_assetRoot = Path.Combine(AppContext.BaseDirectory, "Assets");
+        private static readonly string s_assetRoot = Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\Assets");
 
         public static string GetPath(string assetPath)
         {

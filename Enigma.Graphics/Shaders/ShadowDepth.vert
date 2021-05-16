@@ -1,6 +1,6 @@
 #version 450
 
-struct Veldrid_NeoDemo_Objects_WorldAndInverse
+struct Enigma_Graphics_Objects_WorldAndInverse
 {
     mat4 World;
     mat4 InverseWorld;
@@ -13,7 +13,7 @@ layout(set = 0, binding = 0) uniform ViewProjection
 
 layout(set = 1, binding = 0) uniform WorldAndInverse
 {
-    Veldrid_NeoDemo_Objects_WorldAndInverse _WorldAndInverse;
+    Enigma_Graphics_Objects_WorldAndInverse _WorldAndInverse;
 };
 
 layout(location = 0) in vec3 vsin_Position;

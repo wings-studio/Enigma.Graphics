@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Numerics;
-using System.Resources;
+using System.Collections.Generic;
 using Veldrid;
 using Veldrid.Utilities;
 
@@ -214,6 +214,21 @@ namespace Enigma.Graphics
         internal static byte[] ReadBytesFromResources(string name)
         {
             return (byte[])Properties.Resources.ResourceManager.GetObject(name);
+        }
+
+        public static Vector3 ToNumerics(this Assimp.Vector3D vector)
+        {
+            return new Vector3(vector.X, vector.Y, vector.Z);
+        }
+
+        public static Vector3[] ConvertToVectorArray(this List<Assimp.Vector3D> vectors)
+        {
+            Vector3[] v = new Vector3[vectors.Count];
+            for (int i = 0; i < vectors.Count; i++)
+            {
+                v[i] = vectors[i].ToNumerics();
+            }
+            return v;
         }
     }
 }

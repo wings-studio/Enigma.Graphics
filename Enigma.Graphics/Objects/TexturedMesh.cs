@@ -1,9 +1,8 @@
-﻿using System.Numerics;
-using System.Runtime.CompilerServices;
-using System;
+﻿using System;
+using System.Numerics;
+using Veldrid;
 using Veldrid.ImageSharp;
 using Veldrid.Utilities;
-using Veldrid;
 
 namespace Enigma.Graphics
 {
@@ -135,7 +134,7 @@ namespace Enigma.Graphics
                 sc.NearShadowMapFramebuffer.OutputDescription);
             _shadowMapPipeline = StaticResourceCache.GetPipeline(gd.ResourceFactory, ref depthPD);
 
-            _shadowMapResourceSets = CreateShadowMapResourceSets(gd.ResourceFactory, disposeFactory, cl, sc, projViewCombinedLayout, worldLayout);
+            _shadowMapResourceSets = CreateShadowMapResourceSets(gd.ResourceFactory, disposeFactory, sc, projViewCombinedLayout, worldLayout);
 
             VertexLayoutDescription[] mainVertexLayouts = new VertexLayoutDescription[]
             {
@@ -236,7 +235,6 @@ namespace Enigma.Graphics
         private ResourceSet[] CreateShadowMapResourceSets(
             ResourceFactory sharedFactory,
             ResourceFactory disposeFactory,
-            CommandList cl,
             SceneContext sc,
             ResourceLayout projViewLayout,
             ResourceLayout worldLayout)
