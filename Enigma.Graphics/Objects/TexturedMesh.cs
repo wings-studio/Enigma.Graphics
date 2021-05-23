@@ -88,9 +88,7 @@ namespace Enigma.Graphics
             }
             else
             {
-                _texture = disposeFactory.CreateTexture(TextureDescription.Texture2D(1, 1, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled));
-                RgbaByte color = RgbaByte.Pink;
-                gd.UpdateTexture(_texture, (IntPtr)(&color), 4, 0, 0, 0, 1, 1, 1, 0, 0);
+                _texture = StaticResourceCache.GetColorTexture(gd, gd.ResourceFactory, RgbaByte.Pink);
             }
 
             if (_alphaTextureData != null)
@@ -99,7 +97,7 @@ namespace Enigma.Graphics
             }
             else
             {
-                _alphamapTexture = StaticResourceCache.GetPinkTexture(gd, gd.ResourceFactory);
+                _alphamapTexture = StaticResourceCache.GetColorTexture(gd, gd.ResourceFactory, RgbaByte.Pink);
             }
             _alphaMapView = StaticResourceCache.GetTextureView(gd.ResourceFactory, _alphamapTexture);
 

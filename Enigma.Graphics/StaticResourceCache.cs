@@ -11,6 +11,8 @@ namespace Enigma.Graphics
     /// </summary>
     public static class StaticResourceCache
     {
+        public unsafe static readonly uint ColorSize = Convert.ToUInt32(sizeof(RgbaByte));
+
         private static readonly Dictionary<GraphicsPipelineDescription, Pipeline> s_pipelines
             = new Dictionary<GraphicsPipelineDescription, Pipeline>();
 
@@ -27,8 +29,6 @@ namespace Enigma.Graphics
 
         private static readonly Dictionary<ResourceSetDescription, ResourceSet> s_resourceSets
             = new Dictionary<ResourceSetDescription, ResourceSet>();
-
-        private static Texture _pinkTex;
 
         public static readonly ResourceLayoutDescription ProjViewLayoutDescription = new ResourceLayoutDescription(
             new ResourceLayoutElementDescription("Projection", ResourceKind.UniformBuffer, ShaderStages.Vertex),
@@ -106,9 +106,6 @@ namespace Enigma.Graphics
             }
             s_textureViews.Clear();
 
-            _pinkTex?.Dispose();
-            _pinkTex = null;
-
             foreach (KeyValuePair<ResourceSetDescription, ResourceSet> kvp in s_resourceSets)
             {
                 kvp.Value.Dispose();
@@ -138,16 +135,11 @@ namespace Enigma.Graphics
             return view;
         }
 
-        internal static unsafe Texture GetPinkTexture(GraphicsDevice gd, ResourceFactory factory)
+        public static unsafe Texture GetColorTexture(GraphicsDevice gd, ResourceFactory factory, RgbaByte color)
         {
-            if (_pinkTex == null)
-            {
-                RgbaByte pink = RgbaByte.Pink;
-                _pinkTex = factory.CreateTexture(TextureDescription.Texture2D(1, 1, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled));
-                gd.UpdateTexture(_pinkTex, (IntPtr)(&pink), 4, 0, 0, 0, 1, 1, 1, 0, 0);
-            }
-
-            return _pinkTex;
+            Texture _colorTex = factory.CreateTexture(TextureDescription.Texture2D(1, 1, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled));
+            gd.UpdateTexture(_colorTex, (IntPtr)(&color), ColorSize, 0, 0, 0, 1, 1, 1, 0, 0);
+            return _colorTex;
         }
 
         internal static ResourceSet GetResourceSet(ResourceFactory factory, ResourceSetDescription description)

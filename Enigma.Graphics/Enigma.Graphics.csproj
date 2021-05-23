@@ -4,17 +4,23 @@
     <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>Enigma.Graphics</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.0.1</Version>
+    <Authors>snaulX</Authors>
+    <Company>Wings Studio</Company>
+    <Description>High-level 3D graphics library powered on Veldrid</Description>
+    <RepositoryUrl>https://github.com/wings-studio/Enigma.Graphics</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AssimpNet" Version="5.0.0-beta1" />
-    <PackageReference Include="Veldrid" Version="4.8.0" />
-    <PackageReference Include="Veldrid.ImageSharp" Version="4.8.0" />
-    <PackageReference Include="Veldrid.ImGui" Version="5.72.0" />
-    <PackageReference Include="Veldrid.SDL2" Version="4.8.0" />
+    <!-- Veldrid downloaded from https://www.myget.org/F/mellinoe/api/v3/index.json -->
+    <PackageReference Include="Veldrid" Version="4.9.0-gffcf1cdb33" />
+    <PackageReference Include="Veldrid.ImageSharp" Version="4.9.0-gffcf1cdb33" />
+    <PackageReference Include="Veldrid.SDL2" Version="4.9.0-gffcf1cdb33" />
     <PackageReference Include="Veldrid.SPIRV" Version="1.0.14" />
-    <PackageReference Include="Veldrid.StartupUtilities" Version="4.8.0" />
-    <PackageReference Include="Veldrid.Utilities" Version="4.8.0" />
+    <PackageReference Include="Veldrid.StartupUtilities" Version="4.9.0-gffcf1cdb33" />
+    <PackageReference Include="Veldrid.Utilities" Version="4.9.0-gfca0b9438b" />
   </ItemGroup>
 
   <ItemGroup>

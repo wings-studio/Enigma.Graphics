@@ -11,9 +11,9 @@ namespace Enigma.Graphics.Objects
     {
         public Vector3 Center { private set; get; }
 
-        private readonly Mesh mesh;
+        private readonly Assimp.Mesh mesh;
 
-        public AssimpMesh(Mesh mesh)
+        public AssimpMesh(Assimp.Mesh mesh)
         {
             this.mesh = mesh;
             Center = GetBoundingBox().GetCenter();

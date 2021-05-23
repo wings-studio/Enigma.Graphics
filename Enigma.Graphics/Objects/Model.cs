@@ -56,7 +56,7 @@ namespace Enigma.Graphics.Objects
 
         private void LoadModel(Assimp.Scene model)
         {
-            foreach (Mesh mesh in model.Meshes)
+            foreach (Assimp.Mesh mesh in model.Meshes)
             {
                 MeshData data = new AssimpMesh(mesh);
                 TextureSlot mainTexture = model.Materials[mesh.MaterialIndex].TextureDiffuse;
