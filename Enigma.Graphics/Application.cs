@@ -106,7 +106,7 @@ namespace Enigma.Graphics
 
                 previousFrameTicks = currentFrameTicks;
 
-                Window.Update();
+                Window.Update(DeltaTime);
 
                 if (!Window.Exists)
                 {

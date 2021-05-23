@@ -11,8 +11,6 @@ namespace Enigma.Graphics
     /// </summary>
     public static class StaticResourceCache
     {
-        public unsafe static readonly uint ColorSize = Convert.ToUInt32(sizeof(RgbaByte));
-
         private static readonly Dictionary<GraphicsPipelineDescription, Pipeline> s_pipelines
             = new Dictionary<GraphicsPipelineDescription, Pipeline>();
 
@@ -138,7 +136,7 @@ namespace Enigma.Graphics
         public static unsafe Texture GetColorTexture(GraphicsDevice gd, ResourceFactory factory, RgbaByte color)
         {
             Texture _colorTex = factory.CreateTexture(TextureDescription.Texture2D(1, 1, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled));
-            gd.UpdateTexture(_colorTex, (IntPtr)(&color), ColorSize, 0, 0, 0, 1, 1, 1, 0, 0);
+            gd.UpdateTexture(_colorTex, (IntPtr)(&color), Util.SizeOf<RgbaByte>(), 0, 0, 0, 1, 1, 1, 0, 0);
             return _colorTex;
         }
 

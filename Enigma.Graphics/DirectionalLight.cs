@@ -7,14 +7,11 @@ namespace Enigma.Graphics
 {
     public class DirectionalLight
     {
-        private RgbaFloat _color = RgbaFloat.White;
         public Transform Transform { get; } = new Transform();
 
         public Vector3 Direction => Transform.Forward;
 
-        public event Action<RgbaFloat> ColorChanged;
-
-        public RgbaFloat Color { get => _color; set { _color = value; ColorChanged?.Invoke(value); } }
+        public RgbaFloat Color { get; set; } = RgbaFloat.White;
 
         public DirectionalLight()
         {

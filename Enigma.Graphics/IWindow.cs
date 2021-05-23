@@ -5,7 +5,7 @@ using Enigma.Input;
 
 namespace Enigma.Graphics
 {
-    public interface IWindow : IInputable
+    public interface IWindow : IInputable, IUpdateable
     {
         string Title { set; get; }
         WindowState State { set; get; }
@@ -19,7 +19,5 @@ namespace Enigma.Graphics
         GraphicsDevice CreateGraphicsDevice(GraphicsDeviceOptions options, GraphicsBackend backend);
 
         void Close();
-
-        void Update();
     }
 }

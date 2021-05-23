@@ -24,9 +24,7 @@ namespace Enigma.Graphics
 
         internal MirrorMesh MirrorMesh { get; set; } = new MirrorMesh();
 
-        private readonly Camera _camera;
-
-        public Camera Camera => _camera;
+        public Camera Camera { get; private set; }
 
         public bool ThreadedRendering { get; set; } = false;
 
@@ -43,8 +41,8 @@ namespace Enigma.Graphics
 
         public Scene(IWindow window, GraphicsDevice gd)
         {
-            _camera = new Camera(gd, window);
-            _farCascadeLimit = _camera.FarDistance;
+            Camera = new Camera(gd, window);
+            _farCascadeLimit = Camera.FarDistance;
         }
 
         public void AddRenderable(IRenderable r)
@@ -167,19 +165,19 @@ namespace Enigma.Graphics
             // Render reflected scene.
             Matrix4x4 planeReflectionMatrix = Matrix4x4.CreateReflection(MirrorMesh.Plane);
             CameraInfo camInfo = new CameraInfo();
-            camInfo.CameraLookDirection = Vector3.Normalize(Vector3.Reflect(_camera.LookDirection, MirrorMesh.Plane.Normal));
-            camInfo.CameraPosition_WorldSpace = Vector3.Transform(_camera.Position, planeReflectionMatrix);
+            camInfo.CameraLookDirection = Vector3.Normalize(Vector3.Reflect(Camera.LookDirection, MirrorMesh.Plane.Normal));
+            camInfo.CameraPosition_WorldSpace = Vector3.Transform(Camera.Position, planeReflectionMatrix);
             cl.UpdateBuffer(sc.CameraInfoBuffer, 0, ref camInfo);
 
             Matrix4x4 view = sc.Camera.ViewMatrix;
             view = planeReflectionMatrix * view;
             cl.UpdateBuffer(sc.ViewMatrixBuffer, 0, view);
 
-            Matrix4x4 projection = _camera.ProjectionMatrix;
+            Matrix4x4 projection = Camera.ProjectionMatrix;
             cl.UpdateBuffer(sc.ReflectionViewProjBuffer, 0, view * projection);
 
             BoundingFrustum cameraFrustum = new BoundingFrustum(view * projection);
-            Render(gd, cl, sc, RenderPasses.ReflectionMap, cameraFrustum, _camera.Position, _renderQueues[0], _cullableStage[0], _renderableStage[0], null, false);
+            Render(gd, cl, sc, RenderPasses.ReflectionMap, cameraFrustum, Camera.Position, _renderQueues[0], _cullableStage[0], _renderableStage[0], null, false);
 
             cl.GenerateMipmaps(sc.ReflectionColorTexture);
             cl.PopDebugGroup();
@@ -194,14 +192,14 @@ namespace Enigma.Graphics
             cl.SetFullScissorRects();
             cl.ClearDepthStencil(depthClear);
             sc.UpdateCameraBuffers(cl); // Re-set because reflection step changed it.
-            cameraFrustum = new BoundingFrustum(_camera.ViewMatrix * _camera.ProjectionMatrix);
-            Render(gd, cl, sc, RenderPasses.Standard, cameraFrustum, _camera.Position, _renderQueues[0], _cullableStage[0], _renderableStage[0], null, false);
+            cameraFrustum = new BoundingFrustum(Camera.ViewMatrix * Camera.ProjectionMatrix);
+            Render(gd, cl, sc, RenderPasses.Standard, cameraFrustum, Camera.Position, _renderQueues[0], _cullableStage[0], _renderableStage[0], null, false);
             cl.PopDebugGroup();
             cl.PushDebugGroup("Transparent Pass");
-            Render(gd, cl, sc, RenderPasses.AlphaBlend, cameraFrustum, _camera.Position, _renderQueues[0], _cullableStage[0], _renderableStage[0], null, false);
+            Render(gd, cl, sc, RenderPasses.AlphaBlend, cameraFrustum, Camera.Position, _renderQueues[0], _cullableStage[0], _renderableStage[0], null, false);
             cl.PopDebugGroup();
             cl.PushDebugGroup("Overlay");
-            Render(gd, cl, sc, RenderPasses.Overlay, cameraFrustum, _camera.Position, _renderQueues[0], _cullableStage[0], _renderableStage[0], null, false);
+            Render(gd, cl, sc, RenderPasses.Overlay, cameraFrustum, Camera.Position, _renderQueues[0], _cullableStage[0], _renderableStage[0], null, false);
             cl.PopDebugGroup();
 
             if (sc.MainSceneColorTexture.SampleCount != TextureSampleCount.Count1)
@@ -214,7 +212,7 @@ namespace Enigma.Graphics
             fbWidth = sc.DuplicatorFramebuffer.Width;
             fbHeight = sc.DuplicatorFramebuffer.Height;
             cl.SetFullViewports();
-            Render(gd, cl, sc, RenderPasses.Duplicator, new BoundingFrustum(), _camera.Position, _renderQueues[0], _cullableStage[0], _renderableStage[0], null, false);
+            Render(gd, cl, sc, RenderPasses.Duplicator, new BoundingFrustum(), Camera.Position, _renderQueues[0], _cullableStage[0], _renderableStage[0], null, false);
             cl.PopDebugGroup();
 
             cl.PushDebugGroup("Swapchain Pass");
@@ -222,7 +220,7 @@ namespace Enigma.Graphics
             fbWidth = gd.SwapchainFramebuffer.Width;
             fbHeight = gd.SwapchainFramebuffer.Height;
             cl.SetFullViewports();
-            Render(gd, cl, sc, RenderPasses.SwapchainOutput, new BoundingFrustum(), _camera.Position, _renderQueues[0], _cullableStage[0], _renderableStage[0], null, false);
+            Render(gd, cl, sc, RenderPasses.SwapchainOutput, new BoundingFrustum(), Camera.Position, _renderQueues[0], _cullableStage[0], _renderableStage[0], null, false);
             cl.PopDebugGroup();
 
             cl.End();
@@ -333,19 +331,19 @@ namespace Enigma.Graphics
                 // Render reflected scene.
                 Matrix4x4 planeReflectionMatrix = Matrix4x4.CreateReflection(MirrorMesh.Plane);
                 CameraInfo camInfo = new CameraInfo();
-                camInfo.CameraLookDirection = Vector3.Normalize(Vector3.Reflect(_camera.LookDirection, MirrorMesh.Plane.Normal));
-                camInfo.CameraPosition_WorldSpace = Vector3.Transform(_camera.Position, planeReflectionMatrix);
+                camInfo.CameraLookDirection = Vector3.Normalize(Vector3.Reflect(Camera.LookDirection, MirrorMesh.Plane.Normal));
+                camInfo.CameraPosition_WorldSpace = Vector3.Transform(Camera.Position, planeReflectionMatrix);
                 cls[4].UpdateBuffer(sc.CameraInfoBuffer, 0, ref camInfo);
 
                 Matrix4x4 view = sc.Camera.ViewMatrix;
                 view = planeReflectionMatrix * view;
                 cls[4].UpdateBuffer(sc.ViewMatrixBuffer, 0, view);
 
-                Matrix4x4 projection = _camera.ProjectionMatrix;
+                Matrix4x4 projection = Camera.ProjectionMatrix;
                 cls[4].UpdateBuffer(sc.ReflectionViewProjBuffer, 0, view * projection);
 
                 BoundingFrustum cameraFrustum = new BoundingFrustum(view * projection);
-                Render(gd, cls[4], sc, RenderPasses.ReflectionMap, cameraFrustum, _camera.Position, _renderQueues[3], _cullableStage[3], _renderableStage[3], null, true);
+                Render(gd, cls[4], sc, RenderPasses.ReflectionMap, cameraFrustum, Camera.Position, _renderQueues[3], _cullableStage[3], _renderableStage[3], null, true);
 
                 cl.GenerateMipmaps(sc.ReflectionColorTexture);
 
@@ -358,10 +356,10 @@ namespace Enigma.Graphics
                 cls[4].ClearColorTarget(0, RgbaFloat.Black);
                 cls[4].ClearDepthStencil(depthClear);
                 sc.UpdateCameraBuffers(cls[4]);
-                cameraFrustum = new BoundingFrustum(_camera.ViewMatrix * _camera.ProjectionMatrix);
-                Render(gd, cls[4], sc, RenderPasses.Standard, cameraFrustum, _camera.Position, _renderQueues[3], _cullableStage[3], _renderableStage[3], null, true);
-                Render(gd, cls[4], sc, RenderPasses.AlphaBlend, cameraFrustum, _camera.Position, _renderQueues[3], _cullableStage[3], _renderableStage[3], null, true);
-                Render(gd, cls[4], sc, RenderPasses.Overlay, cameraFrustum, _camera.Position, _renderQueues[3], _cullableStage[3], _renderableStage[3], null, true);
+                cameraFrustum = new BoundingFrustum(Camera.ViewMatrix * Camera.ProjectionMatrix);
+                Render(gd, cls[4], sc, RenderPasses.Standard, cameraFrustum, Camera.Position, _renderQueues[3], _cullableStage[3], _renderableStage[3], null, true);
+                Render(gd, cls[4], sc, RenderPasses.AlphaBlend, cameraFrustum, Camera.Position, _renderQueues[3], _cullableStage[3], _renderableStage[3], null, true);
+                Render(gd, cls[4], sc, RenderPasses.Overlay, cameraFrustum, Camera.Position, _renderQueues[3], _cullableStage[3], _renderableStage[3], null, true);
             });
 
             Task.WaitAll(_tasks);
@@ -387,14 +385,14 @@ namespace Enigma.Graphics
             cl.SetViewport(1, new Viewport(0, 0, fbWidth, fbHeight, 0, 1));
             cl.SetScissorRect(0, 0, 0, fbWidth, fbHeight);
             cl.SetScissorRect(1, 0, 0, fbWidth, fbHeight);
-            Render(gd, cl, sc, RenderPasses.Duplicator, new BoundingFrustum(), _camera.Position, _renderQueues[0], _cullableStage[0], _renderableStage[0], null, false);
+            Render(gd, cl, sc, RenderPasses.Duplicator, new BoundingFrustum(), Camera.Position, _renderQueues[0], _cullableStage[0], _renderableStage[0], null, false);
 
             cl.SetFramebuffer(gd.SwapchainFramebuffer);
             fbWidth = gd.SwapchainFramebuffer.Width;
             fbHeight = gd.SwapchainFramebuffer.Height;
             cl.SetViewport(0, new Viewport(0, 0, fbWidth, fbHeight, 0, 1));
             cl.SetScissorRect(0, 0, 0, fbWidth, fbHeight);
-            Render(gd, cl, sc, RenderPasses.SwapchainOutput, new BoundingFrustum(), _camera.Position, _renderQueues[0], _cullableStage[0], _renderableStage[0], null, false);
+            Render(gd, cl, sc, RenderPasses.SwapchainOutput, new BoundingFrustum(), Camera.Position, _renderQueues[0], _cullableStage[0], _renderableStage[0], null, false);
 
             cl.End();
             gd.SubmitCommands(cl);

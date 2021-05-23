@@ -56,7 +56,7 @@ namespace Enigma.Graphics.Sdl
             return VeldridStartup.CreateGraphicsDevice(window, options, backend);
         }
 
-        public virtual void Update()
+        public virtual void Update(float deltaTime)
         {
             Input.Input.UpdateFrameInput(window.PumpEvents());
         }

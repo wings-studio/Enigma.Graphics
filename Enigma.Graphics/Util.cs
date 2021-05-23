@@ -4,18 +4,21 @@ using System.Numerics;
 using System.Collections.Generic;
 using Veldrid;
 using Veldrid.Utilities;
+using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 namespace Enigma.Graphics
 {
     public static class Util
     {
-        public static uint SizeInBytes<T>(this T[] array) where T : struct
+        public static uint SizeInBytes<T>(this T[] array)
         {
-            return (uint)(array.Length * System.Runtime.CompilerServices.Unsafe.SizeOf<T>());
+            return (uint)(array.Length * Unsafe.SizeOf<T>());
         }
 
+        public static uint SizeOf<T>() => (uint)Unsafe.SizeOf<T>();
+
         // Code adapted from https://bitbucket.org/sinbad/ogre/src/9db75e3ba05c/OgreMain/include/OgreVector3.h
-        public static Quaternion FromToRotation(Vector3 from, Vector3 to, Vector3 fallbackAxis = default(Vector3))
+        public static Quaternion FromToRotation(Vector3 from, Vector3 to, Vector3 fallbackAxis = default)
         {
             // Based on Stan Melax's article in Game Programming Gems
             Quaternion q;
@@ -123,7 +126,7 @@ namespace Enigma.Graphics
             return persp;
         }
 
-        private static Matrix4x4 CreatePerspective(float fov, float aspectRatio, float near, float far)
+        public static Matrix4x4 CreatePerspective(float fov, float aspectRatio, float near, float far)
         {
             if (fov <= 0.0f || fov >= MathF.PI)
                 throw new ArgumentOutOfRangeException(nameof(fov));
@@ -156,7 +159,7 @@ namespace Enigma.Graphics
             return result;
         }
 
-        internal static Matrix4x4 CreateOrtho(
+        public static Matrix4x4 CreateOrtho(
             GraphicsDevice gd,
             bool useReverseDepth,
             float left, float right,
