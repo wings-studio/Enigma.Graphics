@@ -17,7 +17,7 @@ namespace Enigma.Graphics.Objects
 
         protected void CreatePipeline(GraphicsPipelineDescription gpd)
         {
-            pipeline = factory.CreateGraphicsPipeline(gpd);
+            pipeline = Renderer.Storage.GetPipeline(factory, gpd);
         }
 
         public abstract void CreateDeviceObjects();

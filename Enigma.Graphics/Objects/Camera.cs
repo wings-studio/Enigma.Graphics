@@ -5,7 +5,7 @@ using Veldrid;
 
 namespace Enigma.Graphics.Objects
 {
-    public class Camera
+    public sealed class Camera
     {
         public Vector3 Position { get => pos; set { pos = value; UpdateViewMatrix(); } }
         public Vector3 LookDirection { get; private set; }

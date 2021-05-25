@@ -44,9 +44,14 @@ namespace Enigma.Graphics
         private readonly Vector3 _objectCenter;
         private bool _materialPropsOwned = false;
 
+        private IGraphicsStorage Storage => Renderer.Storage;
+
         public MaterialProperties MaterialProperties { get => _materialProps.Properties; set { _materialProps.Properties = value; } }
 
         public Transform Transform => _transform;
+
+        public GraphicsDevice GraphicsDevice { get; set; }
+        public CommandList CommandList { get; set; }
 
         public TexturedMesh(string name, MeshData meshData, ImageSharpTexture textureData, ImageSharpTexture alphaTexture, MaterialPropsAndBuffer materialProps)
         {
@@ -61,7 +66,7 @@ namespace Enigma.Graphics
 
         public override BoundingBox BoundingBox => BoundingBox.Transform(_centeredBounds, _transform.GetTransformMatrix());
 
-        public override unsafe void CreateDeviceObjects(GraphicsDevice gd, CommandList cl, SceneContext sc)
+        public override unsafe void CreateDeviceObjects(GraphicsDevice gd, CommandList cl)
         {
             if (s_useUniformOffset)
             {
@@ -84,7 +89,7 @@ namespace Enigma.Graphics
 
             if (_textureData != null)
             {
-                _texture = StaticResourceCache.GetTexture2D(gd, gd.ResourceFactory, _textureData);
+                _texture = Storage.GetTexture2D(gd, gd.ResourceFactory, _textureData);
             }
             else
             {
@@ -99,7 +104,7 @@ namespace Enigma.Graphics
             {
                 _alphamapTexture = gd.GetColorTexture(gd.ResourceFactory, RgbaByte.Pink);
             }
-            _alphaMapView = StaticResourceCache.GetTextureView(gd.ResourceFactory, _alphamapTexture);
+            _alphaMapView = Storage.GetTextureView(gd.ResourceFactory, _alphamapTexture);
 
             VertexLayoutDescription[] shadowDepthVertexLayouts = new VertexLayoutDescription[]
             {
@@ -109,14 +114,14 @@ namespace Enigma.Graphics
                     new VertexElementDescription("TexCoord", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2))
             };
 
-            (Shader depthVS, Shader depthFS) = StaticResourceCache.GetShaders(gd, gd.ResourceFactory, "ShadowDepth");
+            (Shader depthVS, Shader depthFS) = Storage.GetShaders(gd, gd.ResourceFactory, "ShadowDepth");
 
-            ResourceLayout projViewCombinedLayout = StaticResourceCache.GetResourceLayout(
+            ResourceLayout projViewCombinedLayout = Storage.GetResourceLayout(
                 gd.ResourceFactory,
                 new ResourceLayoutDescription(
                     new ResourceLayoutElementDescription("ViewProjection", ResourceKind.UniformBuffer, ShaderStages.Vertex)));
 
-            ResourceLayout worldLayout = StaticResourceCache.GetResourceLayout(gd.ResourceFactory, new ResourceLayoutDescription(
+            ResourceLayout worldLayout = Storage.GetResourceLayout(gd.ResourceFactory, new ResourceLayoutDescription(
                 new ResourceLayoutElementDescription("WorldAndInverse", ResourceKind.UniformBuffer, ShaderStages.Vertex, ResourceLayoutElementOptions.DynamicBinding)));
 
             GraphicsPipelineDescription depthPD = new GraphicsPipelineDescription(
@@ -130,7 +135,7 @@ namespace Enigma.Graphics
                     new[] { new SpecializationConstant(100, gd.IsClipSpaceYInverted) }),
                 new ResourceLayout[] { projViewCombinedLayout, worldLayout },
                 sc.NearShadowMapFramebuffer.OutputDescription);
-            _shadowMapPipeline = StaticResourceCache.GetPipeline(gd.ResourceFactory, ref depthPD);
+            _shadowMapPipeline = Storage.GetPipeline(gd.ResourceFactory, ref depthPD);
 
             _shadowMapResourceSets = CreateShadowMapResourceSets(gd.ResourceFactory, disposeFactory, sc, projViewCombinedLayout, worldLayout);
 
@@ -142,13 +147,13 @@ namespace Enigma.Graphics
                     new VertexElementDescription("TexCoord", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2))
             };
 
-            (Shader mainVS, Shader mainFS) = StaticResourceCache.GetShaders(gd, gd.ResourceFactory, "ShadowMain");
+            (Shader mainVS, Shader mainFS) = Storage.GetShaders(gd, gd.ResourceFactory, "ShadowMain");
 
-            ResourceLayout projViewLayout = StaticResourceCache.GetResourceLayout(
+            ResourceLayout projViewLayout = Storage.GetResourceLayout(
                 gd.ResourceFactory,
-                StaticResourceCache.ProjViewLayoutDescription);
+                Storage.ProjViewLayoutDescription);
 
-            ResourceLayout mainSharedLayout = StaticResourceCache.GetResourceLayout(gd.ResourceFactory, new ResourceLayoutDescription(
+            ResourceLayout mainSharedLayout = Storage.GetResourceLayout(gd.ResourceFactory, new ResourceLayoutDescription(
                 new ResourceLayoutElementDescription("LightViewProjection1", ResourceKind.UniformBuffer, ShaderStages.Vertex | ShaderStages.Fragment),
                 new ResourceLayoutElementDescription("LightViewProjection2", ResourceKind.UniformBuffer, ShaderStages.Vertex | ShaderStages.Fragment),
                 new ResourceLayoutElementDescription("LightViewProjection3", ResourceKind.UniformBuffer, ShaderStages.Vertex | ShaderStages.Fragment),
@@ -157,7 +162,7 @@ namespace Enigma.Graphics
                 new ResourceLayoutElementDescription("CameraInfo", ResourceKind.UniformBuffer, ShaderStages.Vertex | ShaderStages.Fragment),
                 new ResourceLayoutElementDescription("PointLights", ResourceKind.UniformBuffer, ShaderStages.Vertex | ShaderStages.Fragment)));
 
-            ResourceLayout mainPerObjectLayout = StaticResourceCache.GetResourceLayout(gd.ResourceFactory, new ResourceLayoutDescription(
+            ResourceLayout mainPerObjectLayout = Storage.GetResourceLayout(gd.ResourceFactory, new ResourceLayoutDescription(
                 new ResourceLayoutElementDescription("WorldAndInverse", ResourceKind.UniformBuffer, ShaderStages.Vertex | ShaderStages.Fragment, ResourceLayoutElementOptions.DynamicBinding),
                 new ResourceLayoutElementDescription("MaterialProperties", ResourceKind.UniformBuffer, ShaderStages.Vertex | ShaderStages.Fragment),
                 new ResourceLayoutElementDescription("SurfaceTexture", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
@@ -169,7 +174,7 @@ namespace Enigma.Graphics
                 new ResourceLayoutElementDescription("ShadowMapFar", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
                 new ResourceLayoutElementDescription("ShadowMapSampler", ResourceKind.Sampler, ShaderStages.Fragment)));
 
-            ResourceLayout reflectionLayout = StaticResourceCache.GetResourceLayout(gd.ResourceFactory, new ResourceLayoutDescription(
+            ResourceLayout reflectionLayout = Storage.GetResourceLayout(gd.ResourceFactory, new ResourceLayoutDescription(
                 new ResourceLayoutElementDescription("ReflectionMap", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
                 new ResourceLayoutElementDescription("ReflectionSampler", ResourceKind.Sampler, ShaderStages.Fragment),
                 new ResourceLayoutElementDescription("ReflectionViewProj", ResourceKind.UniformBuffer, ShaderStages.Vertex),
@@ -186,17 +191,17 @@ namespace Enigma.Graphics
                 new ShaderSetDescription(mainVertexLayouts, new[] { mainVS, mainFS }, new[] { new SpecializationConstant(100, gd.IsClipSpaceYInverted) }),
                 new ResourceLayout[] { projViewLayout, mainSharedLayout, mainPerObjectLayout, reflectionLayout },
                 sc.MainSceneFramebuffer.OutputDescription);
-            _pipeline = StaticResourceCache.GetPipeline(gd.ResourceFactory, ref mainPD);
+            _pipeline = Storage.GetPipeline(gd.ResourceFactory, ref mainPD);
             _pipeline.Name = "TexturedMesh Main Pipeline";
             mainPD.RasterizerState.CullMode = FaceCullMode.Front;
             mainPD.Outputs = sc.ReflectionFramebuffer.OutputDescription;
-            _pipelineFrontCull = StaticResourceCache.GetPipeline(gd.ResourceFactory, ref mainPD);
+            _pipelineFrontCull = Storage.GetPipeline(gd.ResourceFactory, ref mainPD);
 
-            _mainProjViewRS = StaticResourceCache.GetResourceSet(gd.ResourceFactory, new ResourceSetDescription(projViewLayout,
+            _mainProjViewRS = Storage.GetResourceSet(gd.ResourceFactory, new ResourceSetDescription(projViewLayout,
                 sc.ProjectionMatrixBuffer,
                 sc.ViewMatrixBuffer));
 
-            _mainSharedRS = StaticResourceCache.GetResourceSet(gd.ResourceFactory, new ResourceSetDescription(mainSharedLayout,
+            _mainSharedRS = Storage.GetResourceSet(gd.ResourceFactory, new ResourceSetDescription(mainSharedLayout,
                 sc.LightViewProjectionBuffer0,
                 sc.LightViewProjectionBuffer1,
                 sc.LightViewProjectionBuffer2,
@@ -217,13 +222,13 @@ namespace Enigma.Graphics
                 sc.FarShadowMapView,
                 gd.PointSampler));
 
-            _reflectionRS = StaticResourceCache.GetResourceSet(gd.ResourceFactory, new ResourceSetDescription(reflectionLayout,
+            _reflectionRS = Storage.GetResourceSet(gd.ResourceFactory, new ResourceSetDescription(reflectionLayout,
                 _alphaMapView, // Doesn't really matter -- just don't bind the actual reflection map since it's being rendered to.
                 gd.PointSampler,
                 sc.ReflectionViewProjBuffer,
                 sc.MirrorClipPlaneBuffer));
 
-            _noReflectionRS = StaticResourceCache.GetResourceSet(gd.ResourceFactory, new ResourceSetDescription(reflectionLayout,
+            _noReflectionRS = Storage.GetResourceSet(gd.ResourceFactory, new ResourceSetDescription(reflectionLayout,
                 sc.ReflectionColorView,
                 gd.PointSampler,
                 sc.ReflectionViewProjBuffer,
@@ -233,7 +238,6 @@ namespace Enigma.Graphics
         private ResourceSet[] CreateShadowMapResourceSets(
             ResourceFactory sharedFactory,
             ResourceFactory disposeFactory,
-            SceneContext sc,
             ResourceLayout projViewLayout,
             ResourceLayout worldLayout)
         {
@@ -242,7 +246,7 @@ namespace Enigma.Graphics
             for (int i = 0; i < 3; i++)
             {
                 DeviceBuffer viewProjBuffer = i == 0 ? sc.LightViewProjectionBuffer0 : i == 1 ? sc.LightViewProjectionBuffer1 : sc.LightViewProjectionBuffer2;
-                ret[i * 2] = StaticResourceCache.GetResourceSet(sharedFactory, new ResourceSetDescription(
+                ret[i * 2] = Storage.GetResourceSet(sharedFactory, new ResourceSetDescription(
                     projViewLayout,
                     viewProjBuffer));
                 ResourceSet worldRS = disposeFactory.CreateResourceSet(new ResourceSetDescription(
@@ -262,58 +266,36 @@ namespace Enigma.Graphics
             }
 
             _disposeCollector.DisposeAll();
-        }
+        }              
 
-        public override RenderOrderKey GetRenderOrderKey(Vector3 cameraPosition)
-        {
-            return RenderOrderKey.Create(
-                _pipeline.GetHashCode(),
-                Vector3.Distance((_objectCenter * _transform.Scale) + _transform.Position, cameraPosition));
-        }
-
-        public override RenderPasses RenderPasses
-        {
-            get
-            {
-                if (_alphaTextureData != null)
-                {
-                    return RenderPasses.AllShadowMap | RenderPasses.AlphaBlend | RenderPasses.ReflectionMap;
-                }
-                else
-                {
-                    return RenderPasses.AllShadowMap | RenderPasses.Standard | RenderPasses.ReflectionMap;
-                }
-            }
-        }
-
-        public override void Render(GraphicsDevice gd, CommandList cl, RenderPasses renderPass)
+        public void Render()
         {
             if (_materialPropsOwned)
             {
-                _materialProps.FlushChanges(cl);
+                _materialProps.FlushChanges(CommandList);
             }
 
             if ((renderPass & RenderPasses.AllShadowMap) != 0)
             {
                 int shadowMapIndex = renderPass == RenderPasses.ShadowMapNear ? 0 : renderPass == RenderPasses.ShadowMapMid ? 1 : 2;
-                RenderShadowMap(cl, shadowMapIndex);
+                RenderShadowMap(CommandList, shadowMapIndex);
             }
             else if (renderPass == RenderPasses.Standard || renderPass == RenderPasses.AlphaBlend)
             {
-                RenderStandard(cl, false);
+                RenderStandard(CommandList, false);
             }
             else if (renderPass == RenderPasses.ReflectionMap)
             {
-                RenderStandard(cl, true);
+                RenderStandard(CommandList, true);
             }
         }
 
-        public override void UpdatePerFrameResources(GraphicsDevice gd, CommandList cl)
+        public void UpdatePerFrameResources()
         {
             WorldAndInverse wai;
             wai.World = _transform.GetTransformMatrix();
             wai.InverseWorld = VdUtilities.CalculateInverseTranspose(ref wai.World);
-            gd.UpdateBuffer(_worldAndInverseBuffer, _uniformOffset * 2, ref wai);
+            GraphicsDevice.UpdateBuffer(_worldAndInverseBuffer, _uniformOffset * 2, ref wai);
         }
 
         private void RenderShadowMap(CommandList cl, int shadowMapIndex)

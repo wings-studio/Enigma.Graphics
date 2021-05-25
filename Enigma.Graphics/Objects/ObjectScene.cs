@@ -9,9 +9,9 @@ namespace Enigma.Graphics.Objects
     {
         public Camera Camera { get; set; }
 
+        private BoundingFrustum CameraFrustum => new BoundingFrustum(Camera.ViewMatrix * Camera.ProjectionMatrix);
         private readonly Octree<RenderObject> renderObjects
             = new Octree<RenderObject>(new BoundingBox(Vector3.One * -50, Vector3.One * 50), 2);
-        private BoundingFrustum cameraFrustum => new BoundingFrustum(Camera.ViewMatrix * Camera.ProjectionMatrix);
 
         public ObjectScene() : base()
         {
@@ -36,7 +36,7 @@ namespace Enigma.Graphics.Objects
         {
             BeginDraw();
             List<RenderObject> ro = new ();
-            renderObjects.GetContainedObjects(cameraFrustum, ro);
+            renderObjects.GetContainedObjects(CameraFrustum, ro);
             foreach (RenderObject r in ro)
             {
                 r.CommandList = cl;

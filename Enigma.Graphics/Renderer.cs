@@ -7,6 +7,8 @@ namespace Enigma.Graphics
 {
     public class Renderer
     {
+        public static IGraphicsStorage Storage { get; set; }
+
         public IWindow Window { get; protected set; }
         public GraphicsDevice GraphicsDevice { get; protected set; }
         public Scene CurrentScene { get; protected set; }
