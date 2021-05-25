@@ -6,7 +6,7 @@ using Veldrid.Utilities;
 
 namespace Enigma.Graphics
 {
-    public class TexturedMesh : CullRenderable
+    public class TexturedMesh : IRenderable
     {
         // Useful for testing uniform bindings with an offset.
         private static readonly bool s_useUniformOffset = false;
@@ -88,7 +88,7 @@ namespace Enigma.Graphics
             }
             else
             {
-                _texture = StaticResourceCache.GetColorTexture(gd, gd.ResourceFactory, RgbaByte.Pink);
+                _texture = gd.GetColorTexture(gd.ResourceFactory, RgbaByte.Pink);
             }
 
             if (_alphaTextureData != null)
@@ -97,7 +97,7 @@ namespace Enigma.Graphics
             }
             else
             {
-                _alphamapTexture = StaticResourceCache.GetColorTexture(gd, gd.ResourceFactory, RgbaByte.Pink);
+                _alphamapTexture = gd.GetColorTexture(gd.ResourceFactory, RgbaByte.Pink);
             }
             _alphaMapView = StaticResourceCache.GetTextureView(gd.ResourceFactory, _alphamapTexture);
 
@@ -286,7 +286,7 @@ namespace Enigma.Graphics
             }
         }
 
-        public override void Render(GraphicsDevice gd, CommandList cl, SceneContext sc, RenderPasses renderPass)
+        public override void Render(GraphicsDevice gd, CommandList cl, RenderPasses renderPass)
         {
             if (_materialPropsOwned)
             {
@@ -296,19 +296,19 @@ namespace Enigma.Graphics
             if ((renderPass & RenderPasses.AllShadowMap) != 0)
             {
                 int shadowMapIndex = renderPass == RenderPasses.ShadowMapNear ? 0 : renderPass == RenderPasses.ShadowMapMid ? 1 : 2;
-                RenderShadowMap(cl, sc, shadowMapIndex);
+                RenderShadowMap(cl, shadowMapIndex);
             }
             else if (renderPass == RenderPasses.Standard || renderPass == RenderPasses.AlphaBlend)
             {
-                RenderStandard(cl, sc, false);
+                RenderStandard(cl, false);
             }
             else if (renderPass == RenderPasses.ReflectionMap)
             {
-                RenderStandard(cl, sc, true);
+                RenderStandard(cl, true);
             }
         }
 
-        public override void UpdatePerFrameResources(GraphicsDevice gd, CommandList cl, SceneContext sc)
+        public override void UpdatePerFrameResources(GraphicsDevice gd, CommandList cl)
         {
             WorldAndInverse wai;
             wai.World = _transform.GetTransformMatrix();
@@ -316,7 +316,7 @@ namespace Enigma.Graphics
             gd.UpdateBuffer(_worldAndInverseBuffer, _uniformOffset * 2, ref wai);
         }
 
-        private void RenderShadowMap(CommandList cl, SceneContext sc, int shadowMapIndex)
+        private void RenderShadowMap(CommandList cl, int shadowMapIndex)
         {
             cl.SetVertexBuffer(0, _vb);
             cl.SetIndexBuffer(_ib, IndexFormat.UInt16);
@@ -327,7 +327,7 @@ namespace Enigma.Graphics
             cl.DrawIndexed((uint)_indexCount, 1, 0, 0, 0);
         }
 
-        private void RenderStandard(CommandList cl, SceneContext sc, bool reflectionPass)
+        private void RenderStandard(CommandList cl, bool reflectionPass)
         {
             cl.SetVertexBuffer(0, _vb);
             cl.SetIndexBuffer(_ib, IndexFormat.UInt16);

@@ -99,7 +99,7 @@ namespace Enigma.Graphics
         }
 
         public static Matrix4x4 CreatePerspective(
-            GraphicsDevice gd,
+            this GraphicsDevice gd,
             bool useReverseDepth,
             float fov,
             float aspectRatio,
@@ -159,8 +159,15 @@ namespace Enigma.Graphics
             return result;
         }
 
+        public static unsafe Texture GetColorTexture(this GraphicsDevice gd, ResourceFactory factory, RgbaByte color)
+        {
+            Texture _colorTex = factory.CreateTexture(TextureDescription.Texture2D(1, 1, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled));
+            gd.UpdateTexture(_colorTex, (IntPtr)(&color), SizeOf<RgbaByte>(), 0, 0, 0, 1, 1, 1, 0, 0);
+            return _colorTex;
+        }
+
         public static Matrix4x4 CreateOrtho(
-            GraphicsDevice gd,
+            this GraphicsDevice gd,
             bool useReverseDepth,
             float left, float right,
             float bottom, float top,
@@ -187,7 +194,7 @@ namespace Enigma.Graphics
             return ortho;
         }
 
-        public static float[] GetFullScreenQuadVerts(GraphicsDevice gd)
+        public static float[] GetFullScreenQuadVerts(this GraphicsDevice gd)
         {
             if (gd.IsClipSpaceYInverted)
             {
