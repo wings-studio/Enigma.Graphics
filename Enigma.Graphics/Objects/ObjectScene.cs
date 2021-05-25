@@ -32,16 +32,21 @@ namespace Enigma.Graphics.Objects
             }
         }
 
-        public override void Draw(float deltaSeconds)
+        public void RenderVisibleObjects()
         {
-            BeginDraw();
-            List<RenderObject> ro = new ();
+            List<RenderObject> ro = new();
             renderObjects.GetContainedObjects(CameraFrustum, ro);
             foreach (RenderObject r in ro)
             {
                 r.CommandList = cl;
                 r.Render();
             }
+        }
+
+        public override void Draw(float deltaSeconds)
+        {
+            BeginDraw();
+            RenderVisibleObjects();
             Render();
             EndDraw();
             UpdateResources();

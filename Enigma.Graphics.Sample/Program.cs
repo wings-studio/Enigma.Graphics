@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using Veldrid;
+using Enigma.Sdl;
 
 namespace Enigma.Graphics.Sample
 {
@@ -7,11 +8,9 @@ namespace Enigma.Graphics.Sample
     {
         static void Main(string[] args)
         {
-            using SampleApp app = new (Veldrid.StartupUtilities.VeldridStartup.GetPlatformDefaultBackend());
-
-            app.Window.Title = $"Enigma Graphics Sample using {app.GraphicsDevice.BackendType} Graphics API";
-
-            app.Run();
+            SdlWindow window = new SdlWindow();
+            Renderer renderer = new Renderer(window, true);
+            renderer.AddRenderStage("Main");
         }
     }
 }

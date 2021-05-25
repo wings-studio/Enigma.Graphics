@@ -52,6 +52,11 @@ namespace Enigma.Graphics
             renderStages.Add(name, scene); 
         }
 
+        public void AddRenderStage(string name)
+        {
+            renderStages.Add(name, new Scene(GraphicsDevice, Window));
+        }
+
         public async void RenderMultiThreading(float deltaSeconds)
         {
             foreach (string stage in renderStages.Keys)

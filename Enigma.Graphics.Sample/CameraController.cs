@@ -23,7 +23,7 @@ namespace Enigma.Graphics.Sample
 
         public void Update(float deltaTime)
         {
-            float sprintFactor = Input.Input.GetKey(Key.ControlLeft)
+            float sprintFactor = Input.GetKey(Key.ControlLeft)
                 ? 0.1f
                 : Input.Input.GetKey(Key.ShiftLeft)
                     ? 2.5f

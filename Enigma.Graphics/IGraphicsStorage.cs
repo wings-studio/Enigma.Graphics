@@ -7,7 +7,9 @@ namespace Enigma.Graphics
 {
     public interface IGraphicsStorage
     {
-        ResourceLayoutDescription ProjViewLayoutDescription { get; set; }
+        ResourceLayoutDescription ProjViewLayoutDescription => new ResourceLayoutDescription(
+            new ResourceLayoutElementDescription("Projection", ResourceKind.UniformBuffer, ShaderStages.Vertex),
+            new ResourceLayoutElementDescription("View", ResourceKind.UniformBuffer, ShaderStages.Vertex));
 
         Pipeline GetPipeline(ResourceFactory factory, GraphicsPipelineDescription gpd);
         (Shader vs, Shader fs) GetShaders(GraphicsDevice gd, ResourceFactory factory, string name);

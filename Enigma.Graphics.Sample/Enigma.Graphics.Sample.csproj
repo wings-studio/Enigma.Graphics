@@ -7,12 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Enigma.Graphics\Enigma.Graphics.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Enigma.Input">
-      <HintPath>..\..\Enigma.Input\Enigma.Input\bin\Debug\net5.0\Enigma.Input.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\Enigma.Sdl\Enigma.Sdl.csproj" />
   </ItemGroup>
 
 </Project>

@@ -16,16 +16,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Enigma.Input">
-      <HintPath>..\..\Enigma.Input\Enigma.Input\bin\Debug\net5.0\Enigma.Input.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="..\LICENSE">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mallos.Input.Veldrid.SDL2" Version="2.1.0" />
   </ItemGroup>
 
 </Project>

@@ -9,8 +9,10 @@ namespace Enigma.Graphics.Objects
 {
     public abstract class Mesh : RenderObject
     {
+        public Transform Transform { get; set; } = new Transform();
         public override BoundingBox BoundingBox => mesh.GetBoundingBox();
 
+        protected IGraphicsStorage Storage => Renderer.Storage;
         protected readonly MeshData mesh;
         protected DeviceBuffer indexBuffer, vertexBuffer;
         protected int indexCount;
@@ -29,11 +31,6 @@ namespace Enigma.Graphics.Objects
         {
             vertexBuffer = mesh.CreateVertexBuffer(factory, CommandList);
             indexBuffer = mesh.CreateIndexBuffer(factory, CommandList, out indexCount);
-
-            GraphicsPipelineDescription desc = new GraphicsPipelineDescription();
-            desc.PrimitiveTopology = PrimitiveTopology.TriangleStrip;
-            desc.BlendState = BlendStateDescription.SingleOverrideBlend;
-            desc.DepthStencilState = new DepthStencilStateDescription(true, true, ComparisonKind.LessEqual);
         }
 
         public override void Dispose()

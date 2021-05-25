@@ -9,8 +9,6 @@ namespace Enigma.Graphics
 {
     public class RealtimeStorage : IGraphicsStorage
     {
-        public ResourceLayoutDescription ProjViewLayoutDescription { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
         public Pipeline GetPipeline(ResourceFactory factory, GraphicsPipelineDescription gpd)
         {
             return factory.CreateGraphicsPipeline(gpd);
@@ -23,12 +21,12 @@ namespace Enigma.Graphics
 
         public ResourceLayout GetResourceLayout(ResourceFactory resourceFactory, ResourceLayoutDescription resourceLayoutDescription)
         {
-            throw new NotImplementedException();
+            return resourceFactory.CreateResourceLayout(resourceLayoutDescription);
         }
 
         public ResourceSet GetResourceSet(ResourceFactory sharedFactory, ResourceSetDescription resourceSetDescription)
         {
-            throw new NotImplementedException();
+            return sharedFactory.CreateResourceSet(resourceSetDescription);
         }
 
         public (Shader vs, Shader fs) GetShaders(GraphicsDevice gd, ResourceFactory factory, string name)
@@ -36,9 +34,9 @@ namespace Enigma.Graphics
             return Shaders.ShaderHelper.LoadSPIRV(gd, factory, name);
         }
 
-        public Texture GetTexture2D(GraphicsDevice gd, ResourceFactory resourceFactory, ImageSharpTexture textureData)
+        public Texture GetTexture2D(GraphicsDevice gd, ResourceFactory factory, ImageSharpTexture textureData)
         {
-            throw new NotImplementedException();
+            return textureData.CreateDeviceTexture(gd, factory);
         }
 
         public TextureView GetTextureView(ResourceFactory resourceFactory, Texture alphamapTexture)
