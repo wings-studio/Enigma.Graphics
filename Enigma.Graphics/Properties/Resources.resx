@@ -118,6 +118,12 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="BaseMesh_frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Shaders\BaseMesh.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="BaseMesh_vert" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Shaders\BaseMesh.vert;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="FullScreenQuad_frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Shaders\FullScreenQuad.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>

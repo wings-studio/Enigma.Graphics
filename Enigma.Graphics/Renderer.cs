@@ -5,7 +5,7 @@ using Veldrid;
 
 namespace Enigma.Graphics
 {
-    public class Renderer
+    public class Renderer : IDisposable
     {
         public static IGraphicsStorage Storage { get; set; }
 
@@ -80,8 +80,15 @@ namespace Enigma.Graphics
         {
             using Scene scene = renderStages[stage];
             CurrentScene = scene;
-            scene.CreateResources();
             scene.Draw(deltaSeconds);
+        }
+
+        public void Dispose()
+        {
+            foreach (Scene stage in renderStages.Values)
+            {
+                stage.Dispose();
+            }
         }
     }
 }

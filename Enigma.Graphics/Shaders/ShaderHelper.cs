@@ -9,7 +9,6 @@ namespace Enigma.Graphics.Shaders
     public static class ShaderHelper
     {
         public static string ShadersFolder = "Shaders";
-        public static string ShadersGenFolder = "Shaders.Generated";
 
         public static (Shader vs, Shader fs) LoadSPIRV(
             GraphicsDevice gd,
@@ -82,26 +81,49 @@ namespace Enigma.Graphics.Shaders
                 }
             }
 
-            string extension = GetSourceExtension(backend);
-            string path = Path.Combine(ShadersGenFolder, name + extension);
+            //string extension = GetSourceExtension(backend);
+            string path = Path.Combine(ShadersFolder, name);// + extension);
             return File.ReadAllBytes(path);
         }
         
         public static byte[] LoadBytecodeFromResources(GraphicsBackend backend, string setName, ShaderStages stage)
         {
-            string stageExt = stage == ShaderStages.Vertex ? "vert" : "frag";
+            string stageExt = GetStageExtension(stage);
             string name = setName + "_" + stageExt;
 
             if (backend == GraphicsBackend.Vulkan || backend == GraphicsBackend.Direct3D11)
             {
                 string bytecodeExtension = GetBytecodeExtension(backend);
                 string bytecodePath = name + bytecodeExtension;
-                return Util.ReadBytesFromResources(bytecodePath);
+                byte[] bytes = Util.ReadBytesFromResources(bytecodePath);
+                if (bytes != null)
+                    return bytes;
             }
-
-            string extension = GetSourceExtension(backend);
-            string path = name + extension;
+            
+            string path = name;
             return Util.ReadBytesFromResources(path);
+        }
+
+        public static string GetStageExtension(ShaderStages stage)
+        {
+            switch (stage)
+            {
+                case ShaderStages.None:
+                    break;
+                case ShaderStages.Vertex:
+                    return "vert";
+                case ShaderStages.Geometry:
+                    return "geom";
+                case ShaderStages.TessellationControl:
+                    break;
+                case ShaderStages.TessellationEvaluation:
+                    break;
+                case ShaderStages.Fragment:
+                    return "frag";
+                case ShaderStages.Compute:
+                    return "comp";
+            }
+            return string.Empty;
         }
 
         public static string GetBytecodeExtension(GraphicsBackend backend)

@@ -63,6 +63,26 @@ namespace Enigma.Graphics.Properties {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Byte[].
         /// </summary>
+        public static byte[] BaseMesh_frag {
+            get {
+                object obj = ResourceManager.GetObject("BaseMesh_frag", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        public static byte[] BaseMesh_vert {
+            get {
+                object obj = ResourceManager.GetObject("BaseMesh_vert", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
         public static byte[] FullScreenQuad_frag {
             get {
                 object obj = ResourceManager.GetObject("FullScreenQuad_frag", resourceCulture);

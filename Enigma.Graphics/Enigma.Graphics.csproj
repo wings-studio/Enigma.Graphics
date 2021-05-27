@@ -10,7 +10,17 @@
     <Company>Wings Studio</Company>
     <Description>High-level 3D graphics library powered on Veldrid</Description>
     <RepositoryUrl>https://github.com/wings-studio/Enigma.Graphics</RepositoryUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Objects\ErrorMesh.cs" />
+    <Compile Remove="Objects\FullscreenQuad.cs" />
+    <Compile Remove="Objects\MaterialPropsAndBuffer.cs" />
+    <Compile Remove="Objects\ScreenDuplicator.cs" />
+    <Compile Remove="Objects\ShadowDrawer.cs" />
+    <Compile Remove="Objects\Skybox.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AssimpNet" Version="5.0.0-beta1" />
@@ -36,6 +46,13 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

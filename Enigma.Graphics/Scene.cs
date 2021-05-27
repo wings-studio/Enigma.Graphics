@@ -34,20 +34,17 @@ namespace Enigma.Graphics
         public virtual void Add(IRenderable renderable)
         {
             renderable.GraphicsDevice = GraphicsDevice;
+            renderable.CommandList = cl;
+            renderable.CreateDeviceObjects();
             renderables.Add(renderable);
-        }
-
-        public virtual void CreateResources()
-        {
-            foreach (IRenderable r in renderables)
-            {
-                r.CreateDeviceObjects();
-            }
         }
 
         public virtual void BeginDraw()
         {
             cl.Begin();
+            cl.SetFramebuffer(GraphicsDevice.SwapchainFramebuffer);
+            cl.ClearColorTarget(0, RgbaFloat.Black);
+            //cl.ClearDepthStencil(1f);
         }
 
         /// <summary>

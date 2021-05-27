@@ -12,7 +12,8 @@ namespace Enigma.Graphics
             new ResourceLayoutElementDescription("View", ResourceKind.UniformBuffer, ShaderStages.Vertex));
 
         Pipeline GetPipeline(ResourceFactory factory, GraphicsPipelineDescription gpd);
-        (Shader vs, Shader fs) GetShaders(GraphicsDevice gd, ResourceFactory factory, string name);
+        (Shader vs, Shader fs) GetShaders(GraphicsDevice gd, ResourceFactory factory, string name, bool fromResources = false);
+        Texture GetColorTexture(GraphicsDevice gd, ResourceFactory factory, RgbaByte color);
         Texture GetTexture2D(GraphicsDevice gd, ResourceFactory resourceFactory, ImageSharpTexture textureData);
         ResourceSet GetResourceSet(ResourceFactory sharedFactory, ResourceSetDescription resourceSetDescription);
         ResourceLayout GetResourceLayout(ResourceFactory resourceFactory, ResourceLayoutDescription resourceLayoutDescription);

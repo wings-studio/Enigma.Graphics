@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Veldrid;
 using Veldrid.ImageSharp;
 
@@ -9,6 +6,13 @@ namespace Enigma.Graphics
 {
     public class RealtimeStorage : IGraphicsStorage
     {
+        public unsafe Texture GetColorTexture(GraphicsDevice gd, ResourceFactory factory, RgbaByte color)
+        {
+            Texture _colorTex = factory.CreateTexture(TextureDescription.Texture2D(1, 1, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled));
+            gd.UpdateTexture(_colorTex, (IntPtr)(&color), Util.SizeOf<RgbaByte>(), 0, 0, 0, 1, 1, 1, 0, 0);
+            return _colorTex;
+        }
+
         public Pipeline GetPipeline(ResourceFactory factory, GraphicsPipelineDescription gpd)
         {
             return factory.CreateGraphicsPipeline(gpd);
@@ -29,9 +33,9 @@ namespace Enigma.Graphics
             return sharedFactory.CreateResourceSet(resourceSetDescription);
         }
 
-        public (Shader vs, Shader fs) GetShaders(GraphicsDevice gd, ResourceFactory factory, string name)
+        public (Shader vs, Shader fs) GetShaders(GraphicsDevice gd, ResourceFactory factory, string name, bool fromResources = false)
         {
-            return Shaders.ShaderHelper.LoadSPIRV(gd, factory, name);
+            return Shaders.ShaderHelper.LoadSPIRV(gd, factory, name, fromResources);
         }
 
         public Texture GetTexture2D(GraphicsDevice gd, ResourceFactory factory, ImageSharpTexture textureData)
@@ -39,9 +43,9 @@ namespace Enigma.Graphics
             return textureData.CreateDeviceTexture(gd, factory);
         }
 
-        public TextureView GetTextureView(ResourceFactory resourceFactory, Texture alphamapTexture)
+        public TextureView GetTextureView(ResourceFactory factory, Texture texture)
         {
-            throw new NotImplementedException();
+            return factory.CreateTextureView(texture);
         }
     }
 }

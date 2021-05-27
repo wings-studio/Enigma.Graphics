@@ -13,22 +13,23 @@ namespace Enigma.Graphics.Objects
         public override BoundingBox BoundingBox => mesh.GetBoundingBox();
 
         protected IGraphicsStorage Storage => Renderer.Storage;
-        protected readonly MeshData mesh;
+        protected readonly IMeshData mesh;
         protected DeviceBuffer indexBuffer, vertexBuffer;
         protected int indexCount;
+        protected readonly uint sizeofVertex;
 
-        private readonly DisposeCollector collector;
+        private DisposeCollector collector;
 
-        public Mesh(MeshData data)
-        {
-            DisposeCollectorResourceFactory f = new (GraphicsDevice.ResourceFactory);
-            collector = f.DisposeCollector;
-            factory = f;
+        public Mesh(IMeshData data)
+        {   
             mesh = data;
         }
 
         public override void CreateDeviceObjects()
         {
+            DisposeCollectorResourceFactory drf = new (GraphicsDevice.ResourceFactory);
+            factory = drf;
+            collector = drf.DisposeCollector;
             vertexBuffer = mesh.CreateVertexBuffer(factory, CommandList);
             indexBuffer = mesh.CreateIndexBuffer(factory, CommandList, out indexCount);
         }

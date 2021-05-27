@@ -24,6 +24,7 @@ namespace Enigma.Graphics.Objects
             if (renderable is RenderObject ro)
             {
                 ro.GraphicsDevice = GraphicsDevice;
+                ro.CreateDeviceObjects();
                 renderObjects.AddItem(ro.BoundingBox, ro);
             }
             else

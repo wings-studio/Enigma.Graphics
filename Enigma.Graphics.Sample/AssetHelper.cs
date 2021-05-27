@@ -11,5 +11,10 @@ namespace Enigma.Graphics.Sample
         {
             return Path.Combine(s_assetRoot, assetPath);
         }
+
+        public static void SetShadersPath()
+        {
+            Shaders.ShaderHelper.ShadersFolder = Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\Enigma.Graphics\\Shaders");
+        }
     }
 }
