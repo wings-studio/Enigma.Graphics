@@ -18,26 +18,25 @@ namespace Enigma.Graphics.Objects
             mesh.VertexSize = Util.SizeOf<VertexPositionTexture>();
         }
 
-        public override void CreateDeviceObjects()
+        public override void CreateDeviceObjects(GraphicsDevice gd, CommandList cl)
         {
-            base.CreateDeviceObjects();
+            base.CreateDeviceObjects(gd, cl);
 
             DeviceBuffer _projectionBuffer = factory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
             DeviceBuffer _viewBuffer = factory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
             DeviceBuffer _worldBuffer = factory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
 
-            //_surfaceTexture = tex.CreateDeviceTexture(GraphicsDevice, factory, TextureUsage.Sampled);
             Texture tex;
             try
             {
-                tex = Storage.GetTexture2D(GraphicsDevice, factory, new Veldrid.ImageSharp.ImageSharpTexture(TexturePath));
+                tex = Storage.GetTexture2D(gd, factory, new Veldrid.ImageSharp.ImageSharpTexture(TexturePath));
             }
             catch
             {
-                tex = Storage.GetColorTexture(GraphicsDevice, factory, RgbaByte.Pink);
+                tex = Storage.GetColorTexture(gd, factory, RgbaByte.Pink);
             }
             TextureView _surfaceTextureView = Storage.GetTextureView(factory, tex);
-            (Shader vs, Shader fs) = Storage.GetShaders(GraphicsDevice, factory, "BaseMesh");
+            (Shader vs, Shader fs) = Storage.GetShaders(gd, factory, "BaseMesh");
             ShaderSetDescription shaderSet = new ShaderSetDescription(
                 new[]
                 {
@@ -58,14 +57,14 @@ namespace Enigma.Graphics.Objects
                     new ResourceLayoutElementDescription("SurfaceTexture", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("SurfaceSampler", ResourceKind.Sampler, ShaderStages.Fragment)));
 
-            pipeline = Storage.GetPipeline(factory, new GraphicsPipelineDescription(
+            CreatePipeline(new GraphicsPipelineDescription(
                 BlendStateDescription.SingleOverrideBlend,
                 DepthStencilStateDescription.DepthOnlyLessEqual,
                 RasterizerStateDescription.Default,
                 PrimitiveTopology.TriangleList,
                 shaderSet,
                 new[] { projViewLayout, worldTextureLayout },
-                GraphicsDevice.SwapchainFramebuffer.OutputDescription));
+                gd.SwapchainFramebuffer.OutputDescription));
 
             _projViewSet = Storage.GetResourceSet(factory, new ResourceSetDescription(
                 projViewLayout,
@@ -76,22 +75,18 @@ namespace Enigma.Graphics.Objects
                 worldTextureLayout,
                 _worldBuffer,
                 _surfaceTextureView,
-                GraphicsDevice.Aniso4xSampler));
+                gd.Aniso4xSampler));
         }
 
-        public override void Render()
-        {
-            CommandList.SetPipeline(pipeline);
-            CommandList.SetVertexBuffer(0, vertexBuffer);
-            CommandList.SetIndexBuffer(indexBuffer, IndexFormat.UInt16);
-            CommandList.SetGraphicsResourceSet(0, _projViewSet);
-            CommandList.SetGraphicsResourceSet(1, _worldTextureSet);
-            CommandList.DrawIndexed((uint)indexCount, 1, 0, 0, 0);
-        }
-
-        public override void UpdatePerFrameResources()
+        public override void UpdatePerFrameResources(CommandList cl)
         {
             // while nothing
+        }
+
+        protected override void SetGraphicsSet(CommandList cl)
+        {
+            cl.SetGraphicsResourceSet(0, _projViewSet);
+            cl.SetGraphicsResourceSet(1, _worldTextureSet);
         }
     }
 

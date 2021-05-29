@@ -23,8 +23,7 @@ namespace Enigma.Graphics.Objects
         {
             if (renderable is RenderObject ro)
             {
-                ro.GraphicsDevice = GraphicsDevice;
-                ro.CreateDeviceObjects();
+                ro.CreateDeviceObjects(GraphicsDevice, cl);
                 renderObjects.AddItem(ro.BoundingBox, ro);
             }
             else
@@ -39,17 +38,16 @@ namespace Enigma.Graphics.Objects
             renderObjects.GetContainedObjects(CameraFrustum, ro);
             foreach (RenderObject r in ro)
             {
-                r.CommandList = cl;
-                r.Render();
+                r.Render(cl);
             }
         }
 
         public override void Draw(float deltaSeconds)
         {
-            BeginDraw();
+            BeginDraw(cl);
             RenderVisibleObjects();
-            Render();
-            EndDraw();
+            Render(cl);
+            EndDraw(cl);
             UpdateResources();
         }
     }

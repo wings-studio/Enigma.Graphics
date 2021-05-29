@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using Veldrid;
+﻿using Veldrid;
 using Veldrid.Utilities;
 
 namespace Enigma.Graphics.Objects
@@ -25,14 +21,25 @@ namespace Enigma.Graphics.Objects
             mesh = data;
         }
 
-        public override void CreateDeviceObjects()
+        public override void CreateDeviceObjects(GraphicsDevice gd, CommandList cl)
         {
-            DisposeCollectorResourceFactory drf = new (GraphicsDevice.ResourceFactory);
+            DisposeCollectorResourceFactory drf = new (gd.ResourceFactory);
             factory = drf;
             collector = drf.DisposeCollector;
-            vertexBuffer = mesh.CreateVertexBuffer(factory, CommandList);
-            indexBuffer = mesh.CreateIndexBuffer(factory, CommandList, out indexCount);
+            vertexBuffer = mesh.CreateVertexBuffer(factory, cl);
+            indexBuffer = mesh.CreateIndexBuffer(factory, cl, out indexCount);
         }
+
+        public override void Render(CommandList cl)
+        {
+            cl.SetPipeline(pipeline);
+            cl.SetIndexBuffer(indexBuffer, IndexFormat.UInt16);
+            cl.SetVertexBuffer(0, vertexBuffer);
+            SetGraphicsSet(cl);
+            cl.DrawIndexed((uint)indexCount, 1, 0, 0, 0);
+        }
+
+        protected abstract void SetGraphicsSet(CommandList cl);
 
         public override void Dispose()
         {

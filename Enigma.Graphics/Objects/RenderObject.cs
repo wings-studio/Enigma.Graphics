@@ -8,8 +8,6 @@ namespace Enigma.Graphics.Objects
 {
     public abstract class RenderObject : IRenderable
     {
-        public GraphicsDevice GraphicsDevice { get; set; }
-        public CommandList CommandList { get; set; }
         public abstract BoundingBox BoundingBox { get; }
 
         protected ResourceFactory factory;
@@ -20,12 +18,12 @@ namespace Enigma.Graphics.Objects
             pipeline = Renderer.Storage.GetPipeline(factory, gpd);
         }
 
-        public abstract void CreateDeviceObjects();
+        public abstract void CreateDeviceObjects(GraphicsDevice gd, CommandList cl);
 
         public abstract void Dispose();
 
-        public abstract void Render();
+        public abstract void Render(CommandList cl);
 
-        public abstract void UpdatePerFrameResources();
+        public abstract void UpdatePerFrameResources(CommandList cl);
     }
 }

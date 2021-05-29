@@ -9,6 +9,7 @@ namespace Enigma.Graphics
     {
         public GraphicsDevice GraphicsDevice { set { gd = value; cl = Factory.CreateCommandList(); } get => gd; }
         public IWindow Window { get; set; }
+        public RgbaFloat ClearColor { get; set; }
 
         protected ResourceFactory Factory => gd.ResourceFactory;
 
@@ -19,6 +20,7 @@ namespace Enigma.Graphics
         public Scene()
         {
             renderables = new List<IRenderable>();
+            ClearColor = RgbaFloat.Black;
         }
 
         public Scene(GraphicsDevice gd) : this()
@@ -31,31 +33,33 @@ namespace Enigma.Graphics
             Window = window;
         }
 
+        public virtual void Init()
+        {
+            foreach (IRenderable r in renderables)
+                r.CreateDeviceObjects(gd, cl);
+        }
+
         public virtual void Add(IRenderable renderable)
         {
-            renderable.GraphicsDevice = GraphicsDevice;
-            renderable.CommandList = cl;
-            renderable.CreateDeviceObjects();
             renderables.Add(renderable);
         }
 
-        public virtual void BeginDraw()
+        public virtual void BeginDraw(CommandList cl)
         {
             cl.Begin();
             cl.SetFramebuffer(GraphicsDevice.SwapchainFramebuffer);
-            cl.ClearColorTarget(0, RgbaFloat.Black);
+            cl.ClearColorTarget(0, ClearColor);
             //cl.ClearDepthStencil(1f);
         }
 
         /// <summary>
         /// Render renderables which was added to this scene
         /// </summary>
-        public virtual void Render()
+        public virtual void Render(CommandList cl)
         {
             foreach (IRenderable r in renderables)
             {
-                r.CommandList = cl;
-                r.Render();
+                r.Render(cl);
             }
         }
 
@@ -65,14 +69,13 @@ namespace Enigma.Graphics
             rescl.Begin();
             foreach (IRenderable r in renderables)
             {
-                r.CommandList = rescl;
-                r.UpdatePerFrameResources();
+                r.UpdatePerFrameResources(rescl);
             }
             rescl.End();
             GraphicsDevice.SubmitCommands(rescl);
         }
 
-        public virtual void EndDraw()
+        public virtual void EndDraw(CommandList cl)
         {
             cl.End();
             GraphicsDevice.SubmitCommands(cl);
@@ -80,9 +83,9 @@ namespace Enigma.Graphics
 
         public virtual void Draw(float deltaSeconds)
         {
-            BeginDraw();
-            Render();
-            EndDraw();
+            BeginDraw(cl);
+            Render(cl);
+            EndDraw(cl);
             UpdateResources();
         }
 

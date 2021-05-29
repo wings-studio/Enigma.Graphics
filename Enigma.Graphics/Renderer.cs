@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Veldrid;
@@ -9,6 +10,16 @@ namespace Enigma.Graphics
     {
         public static IGraphicsStorage Storage { get; set; }
 
+        public RgbaFloat ClearColor 
+        { 
+            set 
+            {
+                foreach (Scene s in renderStages.Values)
+                    s.ClearColor = value;
+                clearColor = value;
+            }
+            get => clearColor;
+        }
         public IWindow Window { get; protected set; }
         public GraphicsDevice GraphicsDevice { get; protected set; }
         public Scene CurrentScene { get; protected set; }
@@ -18,6 +29,7 @@ namespace Enigma.Graphics
 
 
         private readonly Dictionary<string, Scene> renderStages = new Dictionary<string, Scene>();
+        private RgbaFloat clearColor = RgbaFloat.Black;
 
         public Renderer(IWindow window, GraphicsBackend backend, bool debug = false)
         {
@@ -45,10 +57,17 @@ namespace Enigma.Graphics
                 Add(stage, renderable);
         }
 
+        public void Init()
+        {
+            foreach (Scene s in renderStages.Values)
+                s.Init();
+        }
+
         public void AddRenderStage(string name, Scene scene) 
         {
             scene.GraphicsDevice = GraphicsDevice;
             scene.Window = Window;
+            scene.ClearColor = ClearColor;
             renderStages.Add(name, scene); 
         }
 
@@ -63,6 +82,7 @@ namespace Enigma.Graphics
             {
                 await Task.Run(() => Render(stage, deltaSeconds));
             }
+            GraphicsDevice.SwapBuffers();
         }
 
         public void RenderAll(float deltaSeconds)
@@ -71,6 +91,7 @@ namespace Enigma.Graphics
             {
                 Render(stage, deltaSeconds);
             }
+            GraphicsDevice.SwapBuffers();
         }
 
         /// <summary>

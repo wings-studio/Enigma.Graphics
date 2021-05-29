@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Assimp;
 using AScene = Assimp.Scene;
 
@@ -13,6 +12,7 @@ namespace Enigma.Graphics.Objects
         public Model()
         {
             context = new AssimpContext();
+            Meshes = new List<TexturedMesh>();
         }
 
         public Model(string filePath) : this()
@@ -23,21 +23,26 @@ namespace Enigma.Graphics.Objects
         public void LoadModel(string filePath)
         {
             model = context.ImportFile(filePath);
+            UpdateMeshes();
         }
 
-        public IEnumerable<TexturedMesh> Meshes
+        public List<TexturedMesh> Meshes { get; private set; }
+
+        private void UpdateMeshes()
         {
-            get
+            if (model.HasMeshes)
             {
-                if (model.HasMeshes)
+                Meshes.Clear();
+                for (int i = 0; i < model.MeshCount; i++)
                 {
-                    for (int i = 0; i < model.MeshCount; i++)
+                    TexturedMesh mesh = new TexturedMesh(new AssimpMesh(model.Meshes[i]))
                     {
-                        TexturedMesh mesh = new TexturedMesh(new AssimpMesh(model.Meshes[i]));
-                        mesh.TexturePath =
-                            System.Reflection.Assembly.GetExecutingAssembly().Location + model.Materials[model.Meshes[i].MaterialIndex].Name;
-                        yield return mesh;
-                    }
+                        TexturePath =
+                        System.IO.Path.Combine(
+                            System.Reflection.Assembly.GetExecutingAssembly().Location,
+                            model.Materials[model.Meshes[i].MaterialIndex].Name)
+                    };
+                    Meshes.Add(mesh);
                 }
             }
         }
