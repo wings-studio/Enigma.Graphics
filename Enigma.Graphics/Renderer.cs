@@ -63,6 +63,12 @@ namespace Enigma.Graphics
                 s.Init();
         }
 
+        public void Finish()
+        {
+            Dispose();
+            GraphicsDevice.SwapBuffers();
+        }
+
         public void AddRenderStage(string name, Scene scene) 
         {
             scene.GraphicsDevice = GraphicsDevice;
@@ -76,13 +82,22 @@ namespace Enigma.Graphics
             renderStages.Add(name, new Scene(GraphicsDevice, Window));
         }
 
-        public async void RenderMultiThreading(float deltaSeconds)
+        public void AddRenderObjectsStage(string name)
         {
+            renderStages.Add(name, new Objects.ObjectScene(GraphicsDevice, Window));
+        }
+
+        public void RenderMultiThreading(float deltaSeconds)
+        {
+            List<Task> stages = new List<Task>();
             foreach (string stage in renderStages.Keys)
             {
-                await Task.Run(() => Render(stage, deltaSeconds));
+                Task task = new Task(() => Render(stage, deltaSeconds));
+                task.Start();
+                stages.Add(task);
             }
-            GraphicsDevice.SwapBuffers();
+            Task.WaitAll(stages.ToArray());
+            Finish();
         }
 
         public void RenderAll(float deltaSeconds)
@@ -91,7 +106,7 @@ namespace Enigma.Graphics
             {
                 Render(stage, deltaSeconds);
             }
-            GraphicsDevice.SwapBuffers();
+            Finish();
         }
 
         /// <summary>
@@ -99,7 +114,7 @@ namespace Enigma.Graphics
         /// </summary>
         public void Render(string stage, float deltaSeconds)
         {
-            using Scene scene = renderStages[stage];
+            Scene scene = renderStages[stage];
             CurrentScene = scene;
             scene.Draw(deltaSeconds);
         }

@@ -7,15 +7,14 @@ namespace Enigma.Graphics
 {
     public class Scene : IEnumerable<IRenderable>, IDisposable
     {
-        public GraphicsDevice GraphicsDevice { set { gd = value; cl = Factory.CreateCommandList(); } get => gd; }
+        public GraphicsDevice GraphicsDevice { set; get; }
         public IWindow Window { get; set; }
         public RgbaFloat ClearColor { get; set; }
 
-        protected ResourceFactory Factory => gd.ResourceFactory;
+        protected ResourceFactory Factory => GraphicsDevice.ResourceFactory;
 
         protected readonly List<IRenderable> renderables;
         protected CommandList cl;
-        private GraphicsDevice gd;
 
         public Scene()
         {
@@ -35,8 +34,9 @@ namespace Enigma.Graphics
 
         public virtual void Init()
         {
+            cl = Factory.CreateCommandList();
             foreach (IRenderable r in renderables)
-                r.CreateDeviceObjects(gd, cl);
+                r.CreateDeviceObjects(GraphicsDevice, cl);
         }
 
         public virtual void Add(IRenderable renderable)

@@ -7,10 +7,11 @@ using AMesh = Assimp.Mesh;
 
 namespace Enigma.Graphics.Objects
 {
-    public class AssimpMesh : IMeshData
+    public class AssimpMesh<T> : IMeshData<T> where T : unmanaged, IVertexInfo
     {
         public Vector3 Center { private set; get; }
-        public uint VertexSize { get; set; }
+
+        public static uint VertexSize = default(T).SizeInBytes();
 
         private readonly AMesh mesh;
 
@@ -35,10 +36,9 @@ namespace Enigma.Graphics.Objects
             DeviceBuffer buffer;
             if (mesh.HasVertices)
             {
-                var vertices = mesh.Vertices.ConvertToVectorArray();
-                BufferDescription desc = new BufferDescription((uint)(mesh.VertexCount * VertexSize), BufferUsage.VertexBuffer);
+                BufferDescription desc = new ((uint)(mesh.VertexCount * VertexSize), BufferUsage.VertexBuffer);
                 buffer = factory.CreateBuffer(desc);
-                cl.UpdateBuffer(buffer, 0, vertices);
+                cl.UpdateBuffer(buffer, 0, GetVertices(GetVertexPositions()).ToArray());
             }
             else
             {
@@ -85,6 +85,18 @@ namespace Enigma.Graphics.Objects
         public int RayCast(Ray ray, List<float> distances)
         {
             return 0;
+        }
+
+        public List<T> GetVertices(Vector3[] vertices)
+        {
+            List<T> _vertices = new List<T>();
+            foreach (Vector3 vertex in vertices)
+            {
+                T v = new T();
+                v.SetVertex(vertex);
+                _vertices.Add(v);
+            }
+            return _vertices;
         }
     }
 }

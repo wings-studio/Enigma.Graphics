@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using Veldrid;
+﻿using Veldrid;
 using Enigma.Sdl;
 using Enigma.Graphics.Objects;
 using System.Diagnostics;
@@ -10,18 +9,25 @@ namespace Enigma.Graphics.Sample
     {
         const string RENDER_STAGE = "Main";
 
-        static void Main(string[] args)
+        static SdlWindow window;
+        static Renderer renderer;
+
+        static void Init()
         {
             AssetHelper.SetShadersPath();
-            SdlWindow window = new SdlWindow();
+            window = new SdlWindow();
             window.Title = "Enigma Graphics Application";
-            using Renderer renderer = new Renderer(window, true);
+            renderer = new Renderer(window, true);
             renderer.ClearColor = RgbaFloat.Red;
             Renderer.Storage = new RealtimeStorage();
-            renderer.AddRenderStage(RENDER_STAGE);
+            renderer.AddRenderObjectsStage(RENDER_STAGE);
             Model model = new Model(AssetHelper.GetPath("plechovy_sud.FBX"));
             model.ImportToRenderStage(RENDER_STAGE, renderer);
             renderer.Init();
+        }
+
+        static void Run()
+        {
             Stopwatch sw = new Stopwatch();
             sw.Start();
             float lastSeconds = 0;
@@ -32,6 +38,13 @@ namespace Enigma.Graphics.Sample
                 renderer.RenderAll(deltaSeconds);
             }
             sw.Stop();
+            renderer.Dispose();
+        }
+
+        static void Main(string[] args)
+        {
+            Init();
+            Run();
         }
     }
 }

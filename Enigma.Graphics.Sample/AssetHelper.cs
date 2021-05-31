@@ -5,7 +5,7 @@ namespace Enigma.Graphics.Sample
 {
     public static class AssetHelper
     {
-        private static readonly string s_assetRoot = Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\Assets");
+        private static readonly string s_assetRoot = "..\\..\\..\\Assets";
 
         public static string GetPath(string assetPath)
         {
@@ -14,7 +14,7 @@ namespace Enigma.Graphics.Sample
 
         public static void SetShadersPath()
         {
-            Shaders.ShaderHelper.ShadersFolder = Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\Enigma.Graphics\\Shaders");
+            Shaders.ShaderHelper.ShadersFolder = "..\\..\\..\\..\\Enigma.Graphics\\Shaders";
         }
     }
 }

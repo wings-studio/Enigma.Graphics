@@ -6,25 +6,25 @@ using Veldrid;
 
 namespace Enigma.Graphics.Objects
 {
-    public class TexturedMesh : Mesh
+    public class TexturedMesh : Mesh<VertexPositionTexture>
     {
         public string TexturePath { get; set; }
 
         private ResourceSet _projViewSet;
         private ResourceSet _worldTextureSet;
+        private DeviceBuffer _projectionBuffer;
+        private DeviceBuffer _viewBuffer;
+        private DeviceBuffer _worldBuffer;
 
-        public TexturedMesh(IMeshData data) : base(data) 
-        {
-            mesh.VertexSize = Util.SizeOf<VertexPositionTexture>();
-        }
+        public TexturedMesh(IMeshData<VertexPositionTexture> data) : base(data) { }
 
         public override void CreateDeviceObjects(GraphicsDevice gd, CommandList cl)
         {
             base.CreateDeviceObjects(gd, cl);
 
-            DeviceBuffer _projectionBuffer = factory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
-            DeviceBuffer _viewBuffer = factory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
-            DeviceBuffer _worldBuffer = factory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
+            _projectionBuffer = factory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
+            _viewBuffer = factory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
+            _worldBuffer = factory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
 
             Texture tex;
             try
@@ -83,17 +83,19 @@ namespace Enigma.Graphics.Objects
             // while nothing
         }
 
-        protected override void SetGraphicsSet(CommandList cl)
+        protected override void SetGraphicsSet(CommandList cl, Camera camera)
         {
+            cl.UpdateBuffer(_projectionBuffer, 0, camera.ProjectionMatrix);
+            cl.UpdateBuffer(_viewBuffer, 0, camera.ViewMatrix);
+            cl.UpdateBuffer(_worldBuffer, 0, Transform.GetTransformMatrix());
+
             cl.SetGraphicsResourceSet(0, _projViewSet);
             cl.SetGraphicsResourceSet(1, _worldTextureSet);
         }
     }
 
-    public struct VertexPositionTexture
+    public struct VertexPositionTexture : IVertexInfo
     {
-        public const uint SizeInBytes = 20;
-
         public float PosX;
         public float PosY;
         public float PosZ;
@@ -109,5 +111,16 @@ namespace Enigma.Graphics.Objects
             TexU = uv.X;
             TexV = uv.Y;
         }
+
+        public void SetVertex(Vector3 vertexCoord)
+        {
+            PosX = vertexCoord.X;
+            PosY = vertexCoord.Y;
+            PosZ = vertexCoord.Z;
+            TexU = 0;
+            TexV = 0;
+        }
+
+        public uint SizeInBytes() => 20;
     }
 }

@@ -20,9 +20,20 @@ namespace Enigma.Graphics.Objects
             LoadModel(filePath);
         }
 
+        public Model(System.IO.Stream fileStream) : this()
+        {
+            LoadModel(fileStream);
+        }
+
         public void LoadModel(string filePath)
         {
             model = context.ImportFile(filePath);
+            UpdateMeshes();
+        }
+
+        public void LoadModel(System.IO.Stream fileStream)
+        {
+            model = context.ImportFileFromStream(fileStream);
             UpdateMeshes();
         }
 
@@ -35,25 +46,22 @@ namespace Enigma.Graphics.Objects
                 Meshes.Clear();
                 for (int i = 0; i < model.MeshCount; i++)
                 {
-                    TexturedMesh mesh = new TexturedMesh(new AssimpMesh(model.Meshes[i]))
+                    TexturedMesh mesh = new TexturedMesh(new AssimpMesh<VertexPositionTexture>(model.Meshes[i]))
                     {
-                        TexturePath =
-                        System.IO.Path.Combine(
-                            System.Reflection.Assembly.GetExecutingAssembly().Location,
-                            model.Materials[model.Meshes[i].MaterialIndex].Name)
+                        TexturePath = model.Materials[model.Meshes[i].MaterialIndex].Name + ".jpg"
                     };
                     Meshes.Add(mesh);
                 }
             }
         }
 
-        public void ImportToScene(ref Scene scene)
+        public void ImportToScene<T>(T scene) where T : Scene
         {
             foreach (TexturedMesh mesh in Meshes)
                 scene.Add(mesh);
         }
 
-        public void ImportToRenderStage(string stage, Renderer renderer)
+        public void ImportToRenderStage<T>(string stage, T renderer) where T : Renderer
         {
             foreach (TexturedMesh mesh in Meshes)
                 renderer.Add(stage, mesh);

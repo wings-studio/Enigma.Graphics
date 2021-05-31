@@ -18,11 +18,16 @@ namespace Enigma.Graphics.Objects
             pipeline = Renderer.Storage.GetPipeline(factory, gpd);
         }
 
+        public void Render(CommandList cl)
+        {
+            Render(cl, new Camera(0, 0));
+        }
+
         public abstract void CreateDeviceObjects(GraphicsDevice gd, CommandList cl);
 
         public abstract void Dispose();
 
-        public abstract void Render(CommandList cl);
+        public abstract void Render(CommandList cl, Camera camera);
 
         public abstract void UpdatePerFrameResources(CommandList cl);
     }

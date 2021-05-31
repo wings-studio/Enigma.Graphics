@@ -13,17 +13,25 @@ namespace Enigma.Graphics.Objects
         private readonly Octree<RenderObject> renderObjects
             = new Octree<RenderObject>(new BoundingBox(Vector3.One * -50, Vector3.One * 50), 2);
 
-        public ObjectScene() : base()
+        public ObjectScene(Veldrid.GraphicsDevice gd, IWindow window) : base(gd, window)
         {
             Camera = new Camera(Window.Width, Window.Height);
             Window.OnResized += () => Camera.WindowResized(Window.Width, Window.Height);
+        }
+
+        public override void Init()
+        {
+            base.Init();
+            List<RenderObject> objects = new List<RenderObject>();
+            renderObjects.GetAllContainedObjects(objects);
+            foreach (RenderObject ro in objects)
+                ro.CreateDeviceObjects(GraphicsDevice, cl);
         }
 
         public override void Add(IRenderable renderable)
         {
             if (renderable is RenderObject ro)
             {
-                ro.CreateDeviceObjects(GraphicsDevice, cl);
                 renderObjects.AddItem(ro.BoundingBox, ro);
             }
             else
@@ -38,7 +46,7 @@ namespace Enigma.Graphics.Objects
             renderObjects.GetContainedObjects(CameraFrustum, ro);
             foreach (RenderObject r in ro)
             {
-                r.Render(cl);
+                r.Render(cl, Camera);
             }
         }
 
