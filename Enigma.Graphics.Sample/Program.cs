@@ -20,9 +20,11 @@ namespace Enigma.Graphics.Sample
             renderer = new Renderer(window, true);
             renderer.ClearColor = RgbaFloat.Red;
             Renderer.Storage = new RealtimeStorage();
-            renderer.AddRenderObjectsStage(RENDER_STAGE);
+            ObjectScene scene = new ObjectScene(renderer.GraphicsDevice, renderer.Window);
+            CameraController cc = new CameraController(scene.Camera, window);
             Model model = new Model(AssetHelper.GetPath("plechovy_sud.FBX"));
-            model.ImportToRenderStage(RENDER_STAGE, renderer);
+            model.ImportToScene(scene);
+            renderer.AddRenderStage(RENDER_STAGE, scene);
             renderer.Init();
         }
 

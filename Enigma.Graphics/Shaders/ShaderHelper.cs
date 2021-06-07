@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Veldrid.SPIRV;
 using Veldrid;
 
@@ -9,6 +10,28 @@ namespace Enigma.Graphics.Shaders
     public static class ShaderHelper
     {
         public static string ShadersFolder = "Shaders";
+
+        public static (Shader vs, Shader fs) LoadSPIRV(GraphicsDevice gd, ResourceFactory factory, string vsCode, string fsCode)
+        {
+            bool debug = false;
+#if DEBUG
+            debug = true;
+#endif
+
+            Shader[] shaders = factory.CreateFromSpirv(
+                new ShaderDescription(ShaderStages.Vertex, 
+                Encoding.UTF8.GetBytes(vsCode), "main", debug),
+
+                new ShaderDescription(ShaderStages.Fragment,
+                Encoding.UTF8.GetBytes(fsCode), "main", debug),
+
+                GetOptions(gd));
+
+            Shader vs = shaders[0];
+            Shader fs = shaders[1];
+
+            return (vs, fs);
+        }
 
         public static (Shader vs, Shader fs) LoadSPIRV(
             GraphicsDevice gd,

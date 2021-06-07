@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using Veldrid;
 
@@ -15,6 +14,43 @@ namespace Enigma.Graphics.Objects
         private DeviceBuffer _projectionBuffer;
         private DeviceBuffer _viewBuffer;
         private DeviceBuffer _worldBuffer;
+
+        private const string VertexCode = @"
+#version 450
+layout(set = 0, binding = 0) uniform ProjectionBuffer
+{
+    mat4 Projection;
+};
+layout(set = 0, binding = 1) uniform ViewBuffer
+{
+    mat4 View;
+};
+layout(set = 1, binding = 0) uniform WorldBuffer
+{
+    mat4 World;
+};
+layout(location = 0) in vec3 Position;
+layout(location = 1) in vec2 TexCoords;
+layout(location = 0) out vec2 fsin_texCoords;
+void main()
+{
+    vec4 worldPosition = World * vec4(Position, 1);
+    vec4 viewPosition = View * worldPosition;
+    vec4 clipPosition = Projection * viewPosition;
+    gl_Position = clipPosition;
+    fsin_texCoords = TexCoords;
+}";
+
+        private const string FragmentCode = @"
+#version 450
+layout(location = 0) in vec2 fsin_texCoords;
+layout(location = 0) out vec4 fsout_color;
+layout(set = 1, binding = 1) uniform texture2D SurfaceTexture;
+layout(set = 1, binding = 2) uniform sampler SurfaceSampler;
+void main()
+{
+    fsout_color =  texture(sampler2D(SurfaceTexture, SurfaceSampler), fsin_texCoords);
+}";
 
         public TexturedMesh(IMeshData<VertexPositionTexture> data) : base(data) { }
 
@@ -36,7 +72,10 @@ namespace Enigma.Graphics.Objects
                 tex = Storage.GetColorTexture(gd, factory, RgbaByte.Pink);
             }
             TextureView _surfaceTextureView = Storage.GetTextureView(factory, tex);
-            (Shader vs, Shader fs) = Storage.GetShaders(gd, factory, "BaseMesh");
+            (Shader vs, Shader fs) =
+                Shaders.ShaderHelper.LoadSPIRV(gd, factory, VertexCode, FragmentCode);
+                //Storage.GetShaders(gd, factory, "BaseMesh");
+
             ShaderSetDescription shaderSet = new ShaderSetDescription(
                 new[]
                 {
@@ -85,8 +124,14 @@ namespace Enigma.Graphics.Objects
 
         protected override void SetGraphicsSet(CommandList cl, Camera camera)
         {
-            cl.UpdateBuffer(_projectionBuffer, 0, camera.ProjectionMatrix);
-            cl.UpdateBuffer(_viewBuffer, 0, camera.ViewMatrix);
+            //cl.UpdateBuffer(_projectionBuffer, 0, camera.ProjectionMatrix);
+            //cl.UpdateBuffer(_viewBuffer, 0, camera.ViewMatrix);
+            cl.UpdateBuffer(_projectionBuffer, 0, Matrix4x4.CreatePerspectiveFieldOfView(
+                1.0f,
+                camera.AspectRatio,
+                0.5f,
+                100f));
+            cl.UpdateBuffer(_viewBuffer, 0, camera.ViewMatrix); //Matrix4x4.CreateLookAt(Vector3.UnitZ * 2.5f, Vector3.Zero, Vector3.UnitY));
             cl.UpdateBuffer(_worldBuffer, 0, Transform.GetTransformMatrix());
 
             cl.SetGraphicsResourceSet(0, _projViewSet);

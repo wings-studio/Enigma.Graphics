@@ -16,6 +16,7 @@ namespace Enigma.Graphics.Objects
         public ObjectScene(Veldrid.GraphicsDevice gd, IWindow window) : base(gd, window)
         {
             Camera = new Camera(Window.Width, Window.Height);
+            Camera.GraphicsDevice = gd;
             Window.OnResized += () => Camera.WindowResized(Window.Width, Window.Height);
         }
 

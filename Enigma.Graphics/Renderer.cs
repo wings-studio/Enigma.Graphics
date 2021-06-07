@@ -67,9 +67,10 @@ namespace Enigma.Graphics
         {
             Dispose();
             GraphicsDevice.SwapBuffers();
+            GraphicsDevice.WaitForIdle();
         }
 
-        public void AddRenderStage(string name, Scene scene) 
+        public void AddRenderStage<T>(string name, T scene) where T : Scene
         {
             scene.GraphicsDevice = GraphicsDevice;
             scene.Window = Window;

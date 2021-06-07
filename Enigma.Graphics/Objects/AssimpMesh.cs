@@ -38,7 +38,7 @@ namespace Enigma.Graphics.Objects
             {
                 BufferDescription desc = new ((uint)(mesh.VertexCount * VertexSize), BufferUsage.VertexBuffer);
                 buffer = factory.CreateBuffer(desc);
-                cl.UpdateBuffer(buffer, 0, GetVertices(GetVertexPositions()).ToArray());
+                cl.UpdateBuffer(buffer, 0, Util.GetVertices(this, GetVertexPositions()).ToArray());
             }
             else
             {
@@ -85,18 +85,6 @@ namespace Enigma.Graphics.Objects
         public int RayCast(Ray ray, List<float> distances)
         {
             return 0;
-        }
-
-        public List<T> GetVertices(Vector3[] vertices)
-        {
-            List<T> _vertices = new List<T>();
-            foreach (Vector3 vertex in vertices)
-            {
-                T v = new T();
-                v.SetVertex(vertex);
-                _vertices.Add(v);
-            }
-            return _vertices;
         }
     }
 }

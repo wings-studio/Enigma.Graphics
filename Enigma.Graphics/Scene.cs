@@ -49,7 +49,7 @@ namespace Enigma.Graphics
             cl.Begin();
             cl.SetFramebuffer(GraphicsDevice.SwapchainFramebuffer);
             cl.ClearColorTarget(0, ClearColor);
-            //cl.ClearDepthStencil(1f);
+            // cl.ClearDepthStencil(1f);
         }
 
         /// <summary>

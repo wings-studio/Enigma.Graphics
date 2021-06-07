@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Veldrid;
 using Veldrid.Utilities;
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
+using Enigma.Graphics.Objects;
 
 namespace Enigma.Graphics
 {
@@ -239,6 +240,18 @@ namespace Enigma.Graphics
                 v[i] = vectors[i].ToNumerics();
             }
             return v;
+        }
+
+        public static List<T> GetVertices<T>(this IMeshData<T> mesh, Vector3[] vertices) where T : unmanaged, IVertexInfo
+        {
+            List<T> _vertices = new List<T>();
+            foreach (Vector3 vertex in vertices)
+            {
+                T v = new T();
+                v.SetVertex(vertex);
+                _vertices.Add(v);
+            }
+            return _vertices;
         }
     }
 }
