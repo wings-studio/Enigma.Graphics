@@ -36,6 +36,19 @@ namespace Enigma.Graphics.Objects
             windowWidth = width;
         }
 
+        public void Rotate(float x, float y, float z)
+        {
+            // thanks to https://www.researchgate.net/post/Convert-a-3D-direction-vector-to-yaw-and-pitch
+            yaw = (float)Math.Atan(x / (-y));
+            pitch = (float)Math.Atan(Math.Sqrt(x * x + y * y) / z);
+            UpdateViewMatrix();
+        }
+
+        public void Rotate(Vector3 rotation)
+        {
+            Rotate(rotation.X, rotation.Y, rotation.Z);
+        }
+
         public void WindowResized(float width, float height)
         {
             windowWidth = width;
@@ -57,7 +70,7 @@ namespace Enigma.Graphics.Objects
         public void UpdateViewMatrix()
         {
             Quaternion lookRotation = Quaternion.CreateFromYawPitchRoll(Yaw, Pitch, 0f);
-            LookDirection = Vector3.Transform(-Vector3.UnitZ, lookRotation);
+            LookDirection = Vector3.Transform(Vector3.UnitZ, lookRotation);
             ViewMatrix = Matrix4x4.CreateLookAt(pos, pos + LookDirection, Vector3.UnitY);
         }
     }

@@ -7,13 +7,15 @@ namespace Enigma.Graphics.Objects
 {
     public class TexturedMesh : Mesh<VertexPositionTexture>
     {
+        /// <summary>
+        /// Color for mesh if it hasn't texture
+        /// </summary>
+        public static RgbaByte TextureColor = RgbaByte.Pink;
+
         public string TexturePath { get; set; }
 
         private ResourceSet _projViewSet;
         private ResourceSet _worldTextureSet;
-        private DeviceBuffer _projectionBuffer;
-        private DeviceBuffer _viewBuffer;
-        private DeviceBuffer _worldBuffer;
 
         private const string VertexCode = @"
 #version 450
@@ -58,10 +60,6 @@ void main()
         {
             base.CreateDeviceObjects(gd, cl);
 
-            _projectionBuffer = factory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
-            _viewBuffer = factory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
-            _worldBuffer = factory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
-
             Texture tex;
             try
             {
@@ -69,7 +67,7 @@ void main()
             }
             catch
             {
-                tex = Storage.GetColorTexture(gd, factory, RgbaByte.Pink);
+                tex = Storage.GetColorTexture(gd, factory, TextureColor);
             }
             TextureView _surfaceTextureView = Storage.GetTextureView(factory, tex);
             (Shader vs, Shader fs) =
@@ -107,12 +105,12 @@ void main()
 
             _projViewSet = Storage.GetResourceSet(factory, new ResourceSetDescription(
                 projViewLayout,
-                _projectionBuffer,
-                _viewBuffer));
+                projectionBuffer,
+                viewBuffer));
 
             _worldTextureSet = Storage.GetResourceSet(factory, new ResourceSetDescription(
                 worldTextureLayout,
-                _worldBuffer,
+                worldBuffer,
                 _surfaceTextureView,
                 gd.Aniso4xSampler));
         }
@@ -124,16 +122,6 @@ void main()
 
         protected override void SetGraphicsSet(CommandList cl, Camera camera)
         {
-            //cl.UpdateBuffer(_projectionBuffer, 0, camera.ProjectionMatrix);
-            //cl.UpdateBuffer(_viewBuffer, 0, camera.ViewMatrix);
-            cl.UpdateBuffer(_projectionBuffer, 0, Matrix4x4.CreatePerspectiveFieldOfView(
-                1.0f,
-                camera.AspectRatio,
-                0.5f,
-                100f));
-            cl.UpdateBuffer(_viewBuffer, 0, camera.ViewMatrix); //Matrix4x4.CreateLookAt(Vector3.UnitZ * 2.5f, Vector3.Zero, Vector3.UnitY));
-            cl.UpdateBuffer(_worldBuffer, 0, Transform.GetTransformMatrix());
-
             cl.SetGraphicsResourceSet(0, _projViewSet);
             cl.SetGraphicsResourceSet(1, _worldTextureSet);
         }

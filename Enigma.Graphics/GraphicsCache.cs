@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Veldrid;
 using Veldrid.ImageSharp;
 
@@ -10,6 +9,7 @@ namespace Enigma.Graphics
     {
         private readonly Dictionary<RgbaByte, Texture> colorTextures = new Dictionary<RgbaByte, Texture>();
         private readonly Dictionary<GraphicsPipelineDescription, Pipeline> pipelines = new Dictionary<GraphicsPipelineDescription, Pipeline>();
+        private readonly Dictionary<ResourceLayoutDescription, ResourceLayout> resourceLayouts = new Dictionary<ResourceLayoutDescription, ResourceLayout>();
 
         private readonly RealtimeStorage realtimeStorage = new RealtimeStorage();
 
@@ -51,7 +51,14 @@ namespace Enigma.Graphics
 
         public ResourceLayout GetResourceLayout(ResourceFactory factory, ResourceLayoutDescription resourceLayoutDescription)
         {
-            throw new NotImplementedException();
+            if (resourceLayouts.TryGetValue(resourceLayoutDescription, out ResourceLayout resout))
+                return resout;
+            else
+            {
+                ResourceLayout layout = realtimeStorage.GetResourceLayout(factory, resourceLayoutDescription);
+                resourceLayouts.Add(resourceLayoutDescription, layout);
+                return layout;
+            }
         }
 
         public ResourceSet GetResourceSet(ResourceFactory factory, ResourceSetDescription resourceSetDescription)

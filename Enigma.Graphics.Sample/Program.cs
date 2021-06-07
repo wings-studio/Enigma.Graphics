@@ -18,7 +18,8 @@ namespace Enigma.Graphics.Sample
             window = new SdlWindow();
             window.Title = "Enigma Graphics Application";
             renderer = new Renderer(window, true);
-            renderer.ClearColor = RgbaFloat.Red;
+            renderer.ClearColor = RgbaFloat.Black;
+            TexturedMesh.TextureColor = RgbaByte.Blue;
             Renderer.Storage = new RealtimeStorage();
             ObjectScene scene = new ObjectScene(renderer.GraphicsDevice, renderer.Window);
             CameraController cc = new CameraController(scene.Camera, window);

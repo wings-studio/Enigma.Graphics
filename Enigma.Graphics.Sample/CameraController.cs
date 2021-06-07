@@ -9,11 +9,21 @@ namespace Enigma.Graphics.Sample
     {
         public Camera camera;
 
+        private Vector2 lastMousePosition;
+
         public CameraController(Camera camera, Sdl.SdlWindow window)
         {
             this.camera = camera;
-            camera.Position = -Vector3.UnitZ * 50;
+            camera.Position = new Vector3(0, 0, -100f);
             window.Input.KeyboardTracker.KeyDown += KeyboardTracker_KeyDown;
+            window.Input.MouseTracker.Move += MouseTracker_Move;
+            window.Input.Mouse.GetPosition(out int x, out int y);
+            lastMousePosition = new Vector2(x, y);
+        }
+
+        private void MouseTracker_Move(object sender, MouseEventArgs e)
+        {
+            camera.Rotate(new Vector3(lastMousePosition - e.State.Position, 0));
         }
 
         private void KeyboardTracker_KeyDown(object sender, KeyEventArgs e)
@@ -28,6 +38,10 @@ namespace Enigma.Graphics.Sample
                 camera.Position -= Vector3.UnitZ;
             if (e.Key == Keys.D)
                 camera.Position -= Vector3.UnitX;
+            if (e.Key == Keys.Space)
+                camera.Position += Vector3.UnitY;
+            if (e.Key == Keys.LeftControl)
+                camera.Position -= Vector3.UnitY;
         }
     }
 }
