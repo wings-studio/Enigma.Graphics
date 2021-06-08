@@ -65,7 +65,7 @@ namespace Enigma.Graphics
 
         public virtual void UpdateResources()
         {
-            CommandList rescl = Factory.CreateCommandList();
+            using CommandList rescl = Factory.CreateCommandList();
             rescl.Begin();
             foreach (IRenderable r in renderables)
             {

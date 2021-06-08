@@ -18,7 +18,6 @@ namespace Enigma.Graphics.Objects
         public float Pitch { get => pitch; set { pitch = value; UpdateViewMatrix(); } }
         public float AspectRatio => windowWidth / windowHeight;
         public GraphicsDevice GraphicsDevice { get; set; }
-        public CommandList CommandList { get; set; }
 
         private bool UseReverseDepth => GraphicsDevice.IsDepthRangeZeroToOne;
 
@@ -49,6 +48,17 @@ namespace Enigma.Graphics.Objects
             Rotate(rotation.X, rotation.Y, rotation.Z);
         }
 
+        // TODO: Rewrite that camera has rotation as Quaternion not Yaw & Pitch
+        public void Rotate(Quaternion rotation)
+        {
+            Rotate(rotation.X, rotation.Y, rotation.Z);
+        }
+
+        public void Rotate(Vector3 axis, float angle)
+        {
+            Rotate(Quaternion.CreateFromAxisAngle(axis, angle));
+        }
+
         public void WindowResized(float width, float height)
         {
             windowWidth = width;
@@ -58,8 +68,7 @@ namespace Enigma.Graphics.Objects
 
         public void UpdatePerspectiveMatrix()
         {
-            ProjectionMatrix = Util.CreatePerspective(
-                GraphicsDevice,
+            ProjectionMatrix = GraphicsDevice.CreatePerspective(
                 UseReverseDepth,
                 FieldOfView,
                 AspectRatio,
