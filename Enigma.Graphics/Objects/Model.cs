@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using Assimp;
+using Veldrid;
 using AScene = Assimp.Scene;
+using BBox = Veldrid.Utilities.BoundingBox;
 
 namespace Enigma.Graphics.Objects
 {
-    public class Model
+    public class Model : RenderObject
     {
         private readonly AssimpContext context;
         private AScene model;
@@ -39,6 +41,17 @@ namespace Enigma.Graphics.Objects
 
         public List<TexturedMesh> Meshes { get; private set; }
 
+        public override BBox BoundingBox
+        {
+            get
+            {
+                BBox b = new BBox();
+                foreach (TexturedMesh mesh in Meshes)
+                    b = BBox.Combine(b, mesh.BoundingBox);
+                return b;
+            }
+        }
+
         private void UpdateMeshes()
         {
             if (model.HasMeshes)
@@ -55,16 +68,28 @@ namespace Enigma.Graphics.Objects
             }
         }
 
-        public void ImportToScene<T>(T scene) where T : Scene
+        public override void CreateDeviceObjects(GraphicsDevice gd, CommandList cl)
         {
             foreach (TexturedMesh mesh in Meshes)
-                scene.Add(mesh);
+                mesh.CreateDeviceObjects(gd, cl);
         }
 
-        public void ImportToRenderStage<T>(string stage, T renderer) where T : Renderer
+        public override void Dispose()
         {
             foreach (TexturedMesh mesh in Meshes)
-                renderer.Add(stage, mesh);
+                mesh.Dispose();
+        }
+
+        public override void Render(CommandList cl, Camera camera)
+        {
+            foreach (TexturedMesh mesh in Meshes)
+                mesh.Render(cl, camera);
+        }
+
+        public override void UpdatePerFrameResources(CommandList cl)
+        {
+            foreach (TexturedMesh mesh in Meshes)
+                mesh.UpdatePerFrameResources(cl);
         }
     }
 }

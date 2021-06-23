@@ -18,10 +18,10 @@ namespace Enigma.Graphics.Objects
             pipeline = Renderer.Storage.GetPipeline(factory, gpd);
         }
 
-        [Obsolete("This method willn't render anything without camera. Use Render(CommandList, Camera)")]
+        [Obsolete("This method throws exception without camera. Use Render(CommandList, Camera)")]
         public void Render(CommandList cl)
         {
-            Render(cl, new Camera(0, 0));
+            throw new ArgumentException("RenderObject cannot be render without camera");
         }
 
         public abstract void CreateDeviceObjects(GraphicsDevice gd, CommandList cl);

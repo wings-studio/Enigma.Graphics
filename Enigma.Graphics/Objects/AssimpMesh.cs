@@ -38,7 +38,7 @@ namespace Enigma.Graphics.Objects
             {
                 BufferDescription desc = new ((uint)(mesh.VertexCount * VertexSize), BufferUsage.VertexBuffer);
                 buffer = factory.CreateBuffer(desc);
-                cl.UpdateBuffer(buffer, 0, Util.GetVertices(this, GetVertexPositions()).ToArray());
+                cl.UpdateBuffer(buffer, 0, this.GetVertices().ToArray());
             }
             else
             {

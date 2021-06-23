@@ -44,13 +44,13 @@ namespace Enigma.Graphics.Objects
             cl.SetIndexBuffer(indexBuffer, IndexFormat.UInt16);
             cl.SetVertexBuffer(0, vertexBuffer);
 
-            //cl.UpdateBuffer(projectionBuffer, 0, camera.ProjectionMatrix);
+            cl.UpdateBuffer(projectionBuffer, 0, camera.ProjectionMatrix);
             //cl.UpdateBuffer(viewBuffer, 0, camera.ViewMatrix);
-            cl.UpdateBuffer(projectionBuffer, 0, Matrix4x4.CreatePerspectiveFieldOfView(
-                1.0f,
-                camera.AspectRatio,
-                0.5f,
-                100f));
+            //cl.UpdateBuffer(projectionBuffer, 0, Matrix4x4.CreatePerspectiveFieldOfView(
+            //    1.0f,
+            //    camera.AspectRatio,
+            //    0.5f,
+            //    100f));
             cl.UpdateBuffer(viewBuffer, 0, camera.ViewMatrix); //Matrix4x4.CreateLookAt(Vector3.UnitZ * 2.5f, Vector3.Zero, Vector3.UnitY));
             cl.UpdateBuffer(worldBuffer, 0, Transform.GetTransformMatrix());
 

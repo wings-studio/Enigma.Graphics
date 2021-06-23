@@ -30,7 +30,7 @@ namespace Enigma.Graphics.Sample
             camera = scene.Camera;
             SetupCamera();
             Model model = new Model(AssetHelper.GetPath("plechovy_sud.FBX"));
-            model.ImportToScene(scene);
+            scene.Add(model);
             renderer.AddRenderStage(RENDER_STAGE, scene);
             renderer.Init();
         }
@@ -50,7 +50,7 @@ namespace Enigma.Graphics.Sample
             renderer.Dispose();
         }
 
-        public static Camera camera;
+        static Camera camera;
 
         static Vector2 lastMousePosition;
 
@@ -75,6 +75,7 @@ namespace Enigma.Graphics.Sample
             Console.WriteLine(deltaSeconds);
             Console.WriteLine(camera.Yaw + " " + camera.Pitch);
             Console.WriteLine(camera.Position);
+            Console.WriteLine(camera.Rotation);
             Console.WriteLine(e.Key);
 
             // Movement
@@ -93,13 +94,13 @@ namespace Enigma.Graphics.Sample
 
             // Rotation
             if (e.Key == Keys.Up)
-                camera.Rotate(Vector3.UnitZ, ANGLE * deltaSeconds);
+                camera.Rotate(Vector3.UnitZ, ANGLE);
             else if (e.Key == Keys.Down)
-                camera.Rotate(Vector3.UnitZ, -ANGLE * deltaSeconds);
+                camera.Rotate(Vector3.UnitZ, -ANGLE);
             if (e.Key == Keys.Right)
-                camera.Rotate(Vector3.UnitY, ANGLE * deltaSeconds);
+                camera.Rotate(Vector3.UnitY, ANGLE);
             else if (e.Key == Keys.Left)
-                camera.Rotate(Vector3.UnitY, -ANGLE * deltaSeconds);
+                camera.Rotate(Vector3.UnitY, -ANGLE);
         }
 
         static void Main(string[] args)

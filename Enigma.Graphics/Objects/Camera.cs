@@ -7,6 +7,7 @@ namespace Enigma.Graphics.Objects
 {
     public sealed class Camera
     {
+        public Quaternion Rotation { get => rot; set { rot = value; UpdateViewMatrix(); } }
         public Vector3 Position { get => pos; set { pos = value; UpdateViewMatrix(); } }
         public Vector3 LookDirection { get; private set; }
         public Matrix4x4 ViewMatrix { get; private set; }
@@ -19,8 +20,7 @@ namespace Enigma.Graphics.Objects
         public float AspectRatio => windowWidth / windowHeight;
         public GraphicsDevice GraphicsDevice { get; set; }
 
-        private bool UseReverseDepth => GraphicsDevice.IsDepthRangeZeroToOne;
-
+        private Quaternion rot = Quaternion.Identity;
         private Vector3 pos = Vector3.Zero;
         private float yaw, pitch, windowHeight, windowWidth;
 
@@ -29,14 +29,16 @@ namespace Enigma.Graphics.Objects
         /// </summary>
         /// <param name="height">Height of rendering window</param>
         /// <param name="width">Width of rendering window</param>
-        public Camera(float width, float height)
+        public Camera(float width, float height, GraphicsDevice gd)
         {
-            windowHeight = height;
-            windowWidth = width;
+            GraphicsDevice = gd;
+            WindowResized(width, height);
         }
 
         public void Rotate(float x, float y, float z)
         {
+            //rot = new Quaternion(x, y, z, 1);
+            // another resource but I didn't use it: https://stackoverflow.com/questions/5782658/extracting-yaw-from-a-quaternion
             // thanks to https://www.researchgate.net/post/Convert-a-3D-direction-vector-to-yaw-and-pitch
             yaw = (float)Math.Atan(x / (-y));
             pitch = (float)Math.Atan(Math.Sqrt(x * x + y * y) / z);
@@ -57,6 +59,7 @@ namespace Enigma.Graphics.Objects
         public void Rotate(Vector3 axis, float angle)
         {
             Rotate(Quaternion.CreateFromAxisAngle(axis, angle));
+            //Rotation += Quaternion.CreateFromAxisAngle(axis, angle);
         }
 
         public void WindowResized(float width, float height)
@@ -69,7 +72,6 @@ namespace Enigma.Graphics.Objects
         public void UpdatePerspectiveMatrix()
         {
             ProjectionMatrix = GraphicsDevice.CreatePerspective(
-                UseReverseDepth,
                 FieldOfView,
                 AspectRatio,
                 Near,

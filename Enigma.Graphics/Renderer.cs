@@ -78,14 +78,9 @@ namespace Enigma.Graphics
             renderStages.Add(name, scene); 
         }
 
-        public void AddRenderStage(string name)
+        public void AddRenderStage<T>(string name) where T : Scene, new()
         {
-            renderStages.Add(name, new Scene(GraphicsDevice, Window));
-        }
-
-        public void AddRenderObjectsStage(string name)
-        {
-            renderStages.Add(name, new Objects.ObjectScene(GraphicsDevice, Window));
+            AddRenderStage(name, new T());
         }
 
         public void RenderMultiThreading(float deltaSeconds)
