@@ -1,19 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Assimp;
 using Veldrid;
 using Veldrid.Utilities;
+using AMesh = Assimp.Mesh;
 
 namespace Enigma.Graphics.Objects
 {
-    public class AssimpMesh : MeshData
+    public class AssimpMesh<T> : IMeshData<T> where T : unmanaged, IVertexInfo
     {
         public Vector3 Center { private set; get; }
 
-        private readonly Assimp.Mesh mesh;
+        public static uint VertexSize = default(T).SizeInBytes();
 
-        public AssimpMesh(Assimp.Mesh mesh)
+        private readonly AMesh mesh;
+
+        public AssimpMesh(AMesh mesh)
         {
             this.mesh = mesh;
             Center = GetBoundingBox().GetCenter();
@@ -23,7 +25,7 @@ namespace Enigma.Graphics.Objects
         {
             ushort[] indicies = GetIndices();
             indexCount = indicies.Length;
-            BufferDescription desc = new BufferDescription(indicies.SizeInBytes(), BufferUsage.IndexBuffer);
+            BufferDescription desc = new BufferDescription((uint)(indicies.Length * sizeof(uint)), BufferUsage.IndexBuffer);
             DeviceBuffer buffer = factory.CreateBuffer(desc);
             cl.UpdateBuffer(buffer, 0, indicies);
             return buffer;
@@ -34,10 +36,9 @@ namespace Enigma.Graphics.Objects
             DeviceBuffer buffer;
             if (mesh.HasVertices)
             {
-                var vertices = mesh.Vertices.ConvertToVectorArray();
-                BufferDescription desc = new BufferDescription() { Usage = BufferUsage.VertexBuffer };
+                BufferDescription desc = new ((uint)(mesh.VertexCount * VertexSize), BufferUsage.VertexBuffer);
                 buffer = factory.CreateBuffer(desc);
-                cl.UpdateBuffer(buffer, 0, vertices);
+                cl.UpdateBuffer(buffer, 0, this.GetVertices().ToArray());
             }
             else
             {
@@ -46,10 +47,10 @@ namespace Enigma.Graphics.Objects
             return buffer;
         }
 
-        public Veldrid.Utilities.BoundingBox GetBoundingBox()
+        public BoundingBox GetBoundingBox()
         {
             var bb = mesh.BoundingBox;
-            return new Veldrid.Utilities.BoundingBox(bb.Min.ToNumerics(), bb.Max.ToNumerics());
+            return new BoundingBox(bb.Min.ToNumerics(), bb.Max.ToNumerics());
         }
 
         public BoundingSphere GetBoundingSphere()
@@ -70,7 +71,7 @@ namespace Enigma.Graphics.Objects
 
         public Vector3[] GetVertexPositions() => mesh.Vertices.ConvertToVectorArray();
 
-        public bool RayCast(Veldrid.Utilities.Ray ray, out float distance)
+        public bool RayCast(Ray ray, out float distance)
         {
             if (ray.Intersects(GetBoundingBox()))
             {
@@ -81,7 +82,7 @@ namespace Enigma.Graphics.Objects
             return false;
         }
 
-        public int RayCast(Veldrid.Utilities.Ray ray, List<float> distances)
+        public int RayCast(Ray ray, List<float> distances)
         {
             return 0;
         }

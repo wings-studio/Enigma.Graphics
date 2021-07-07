@@ -14,6 +14,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Objects\ErrorMesh.cs" />
+    <Compile Remove="Objects\FullscreenQuad.cs" />
+    <Compile Remove="Objects\MaterialPropsAndBuffer.cs" />
+    <Compile Remove="Objects\ScreenDuplicator.cs" />
+    <Compile Remove="Objects\ShadowDrawer.cs" />
+    <Compile Remove="Objects\Skybox.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AssimpNet" Version="5.0.0-beta1" />
     <!-- Veldrid downloaded from https://www.myget.org/F/mellinoe/api/v3/index.json -->
     <PackageReference Include="Veldrid" Version="4.9.0-gffcf1cdb33" />
@@ -22,12 +31,6 @@
     <PackageReference Include="Veldrid.SPIRV" Version="1.0.14" />
     <PackageReference Include="Veldrid.StartupUtilities" Version="4.9.0-gffcf1cdb33" />
     <PackageReference Include="Veldrid.Utilities" Version="4.9.0-gfca0b9438b" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Enigma.Input">
-      <HintPath>..\..\Enigma.Input\Enigma.Input\bin\Debug\net5.0\Enigma.Input.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>

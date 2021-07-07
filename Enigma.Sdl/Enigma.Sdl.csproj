@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <Authors>snaulX</Authors>
+    <Company>Wings Studio</Company>
+    <Description>Library for interop Veldrid.Sdl2 with Enigma.Graphics</Description>
+    <Version>0.0.1</Version>
+    <RepositoryUrl>https://github.com/wings-studio/Enigma.Graphics</RepositoryUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Enigma.Graphics\Enigma.Graphics.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mallos.Input.Veldrid.SDL2" Version="2.1.0" />
+  </ItemGroup>
+
+</Project>

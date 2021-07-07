@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Veldrid;
 using Veldrid.Utilities;
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
+using Enigma.Graphics.Objects;
 
 namespace Enigma.Graphics
 {
@@ -99,20 +100,19 @@ namespace Enigma.Graphics
         }
 
         public static Matrix4x4 CreatePerspective(
-            GraphicsDevice gd,
-            bool useReverseDepth,
+            this GraphicsDevice gd,
             float fov,
             float aspectRatio,
             float near, float far)
         {
             Matrix4x4 persp;
-            if (useReverseDepth)
+            if (gd.IsDepthRangeZeroToOne)
             {
-                persp = CreatePerspective(fov, aspectRatio, far, near);
+                persp = Matrix4x4.CreatePerspective(fov, aspectRatio, near, far);
             }
             else
             {
-                persp = CreatePerspective(fov, aspectRatio, near, far);
+                persp = Matrix4x4.CreatePerspective(fov, aspectRatio, far, near);
             }
             if (gd.IsClipSpaceYInverted)
             {
@@ -126,48 +126,54 @@ namespace Enigma.Graphics
             return persp;
         }
 
-        public static Matrix4x4 CreatePerspective(float fov, float aspectRatio, float near, float far)
+        //public static Matrix4x4 CreatePerspective(float fov, float aspectRatio, float near, float far)
+        //{
+        //    if (fov <= 0.0f || fov >= MathF.PI)
+        //        throw new ArgumentOutOfRangeException(nameof(fov));
+
+        //    if (near <= 0.0f)
+        //        throw new ArgumentOutOfRangeException(nameof(near));
+
+        //    if (far <= 0.0f)
+        //        throw new ArgumentOutOfRangeException(nameof(far));
+
+        //    float yScale = 1.0f / MathF.Tan(fov * 0.5f);
+        //    float xScale = yScale / aspectRatio;
+
+        //    Matrix4x4 result;
+
+        //    result.M11 = xScale;
+        //    result.M12 = result.M13 = result.M14 = 0.0f;
+
+        //    result.M22 = yScale;
+        //    result.M21 = result.M23 = result.M24 = 0.0f;
+
+        //    result.M31 = result.M32 = 0.0f;
+        //    var negFarRange = float.IsPositiveInfinity(far) ? -1.0f : far / (near - far);
+        //    result.M33 = negFarRange;
+        //    result.M34 = -1.0f;
+
+        //    result.M41 = result.M42 = result.M44 = 0.0f;
+        //    result.M43 = near * negFarRange;
+
+        //    return result;
+        //}
+
+        public static unsafe Texture GetColorTexture(this GraphicsDevice gd, ResourceFactory factory, RgbaByte color)
         {
-            if (fov <= 0.0f || fov >= MathF.PI)
-                throw new ArgumentOutOfRangeException(nameof(fov));
-
-            if (near <= 0.0f)
-                throw new ArgumentOutOfRangeException(nameof(near));
-
-            if (far <= 0.0f)
-                throw new ArgumentOutOfRangeException(nameof(far));
-
-            float yScale = 1.0f / MathF.Tan(fov * 0.5f);
-            float xScale = yScale / aspectRatio;
-
-            Matrix4x4 result;
-
-            result.M11 = xScale;
-            result.M12 = result.M13 = result.M14 = 0.0f;
-
-            result.M22 = yScale;
-            result.M21 = result.M23 = result.M24 = 0.0f;
-
-            result.M31 = result.M32 = 0.0f;
-            var negFarRange = float.IsPositiveInfinity(far) ? -1.0f : far / (near - far);
-            result.M33 = negFarRange;
-            result.M34 = -1.0f;
-
-            result.M41 = result.M42 = result.M44 = 0.0f;
-            result.M43 = near * negFarRange;
-
-            return result;
+            Texture _colorTex = factory.CreateTexture(TextureDescription.Texture2D(1, 1, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled));
+            gd.UpdateTexture(_colorTex, (IntPtr)(&color), SizeOf<RgbaByte>(), 0, 0, 0, 1, 1, 1, 0, 0);
+            return _colorTex;
         }
 
         public static Matrix4x4 CreateOrtho(
-            GraphicsDevice gd,
-            bool useReverseDepth,
+            this GraphicsDevice gd,
             float left, float right,
             float bottom, float top,
             float near, float far)
         {
             Matrix4x4 ortho;
-            if (useReverseDepth)
+            if (gd.IsDepthRangeZeroToOne)
             {
                 ortho = Matrix4x4.CreateOrthographicOffCenter(left, right, bottom, top, far, near);
             }
@@ -187,7 +193,7 @@ namespace Enigma.Graphics
             return ortho;
         }
 
-        public static float[] GetFullScreenQuadVerts(GraphicsDevice gd)
+        public static float[] GetFullScreenQuadVerts(this GraphicsDevice gd)
         {
             if (gd.IsClipSpaceYInverted)
             {
@@ -232,6 +238,18 @@ namespace Enigma.Graphics
                 v[i] = vectors[i].ToNumerics();
             }
             return v;
+        }
+
+        public static List<T> GetVertices<T>(this IMeshData<T> mesh) where T : unmanaged, IVertexInfo
+        {
+            List<T> _vertices = new List<T>();
+            foreach (Vector3 vertex in mesh.GetVertexPositions())
+            {
+                T v = new T();
+                v.SetVertex(vertex);
+                _vertices.Add(v);
+            }
+            return _vertices;
         }
     }
 }

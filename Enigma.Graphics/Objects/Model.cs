@@ -1,68 +1,95 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Numerics;
+﻿using System.Collections.Generic;
 using Assimp;
 using Veldrid;
-using Veldrid.Utilities;
-using Veldrid.ImageSharp;
+using AScene = Assimp.Scene;
+using BBox = Veldrid.Utilities.BoundingBox;
 
 namespace Enigma.Graphics.Objects
 {
-    public class Model : CullRenderable
+    public class Model : RenderObject
     {
-        private Application app;
-        private AssimpContext assimp;
-        private Assimp.Scene model;
+        private readonly AssimpContext context;
+        private AScene model;
 
-        public Model(ref Application application)
+        public Model()
         {
-            assimp = new AssimpContext();
-            app = application;
+            context = new AssimpContext();
+            Meshes = new List<TexturedMesh>();
         }
 
-        public override Veldrid.Utilities.BoundingBox BoundingBox => throw new NotImplementedException();
-
-        public override RenderPasses RenderPasses => throw new NotImplementedException();
-
-        public override void CreateDeviceObjects(GraphicsDevice gd, CommandList cl, SceneContext sc)
+        public Model(string filePath) : this()
         {
-            throw new NotImplementedException();
+            LoadModel(filePath);
         }
 
-        public override void Dispose()
+        public Model(System.IO.Stream fileStream) : this()
         {
-            throw new NotImplementedException();
-        }
-
-        public override RenderOrderKey GetRenderOrderKey(Vector3 cameraPosition)
-        {
-            throw new NotImplementedException();
+            LoadModel(fileStream);
         }
 
         public void LoadModel(string filePath)
         {
-            LoadModel(assimp.ImportFile(filePath));
+            model = context.ImportFile(filePath);
+            UpdateMeshes();
         }
 
-        public override void Render(GraphicsDevice gd, CommandList cl, SceneContext sc, RenderPasses renderPass)
+        public void LoadModel(System.IO.Stream fileStream)
         {
-            throw new NotImplementedException();
+            model = context.ImportFileFromStream(fileStream);
+            UpdateMeshes();
         }
 
-        public override void UpdatePerFrameResources(GraphicsDevice gd, CommandList cl, SceneContext sc)
-        {
-            throw new NotImplementedException();
-        }
+        public List<TexturedMesh> Meshes { get; private set; }
 
-        private void LoadModel(Assimp.Scene model)
+        public override BBox BoundingBox
         {
-            foreach (Assimp.Mesh mesh in model.Meshes)
+            get
             {
-                MeshData data = new AssimpMesh(mesh);
-                TextureSlot mainTexture = model.Materials[mesh.MaterialIndex].TextureDiffuse;
-                var texture = app.LoadTexture(mainTexture.FilePath, false);
+                BBox b = new BBox();
+                foreach (TexturedMesh mesh in Meshes)
+                    b = BBox.Combine(b, mesh.BoundingBox);
+                return b;
             }
-            this.model = model;
+        }
+
+        private void UpdateMeshes()
+        {
+            if (model.HasMeshes)
+            {
+                Meshes.Clear();
+                for (int i = 0; i < model.MeshCount; i++)
+                {
+                    TexturedMesh mesh = new TexturedMesh(new AssimpMesh<VertexPositionTexture>(model.Meshes[i]))
+                    {
+                        TexturePath = model.Materials[model.Meshes[i].MaterialIndex].Name + ".jpg"
+                    };
+                    Meshes.Add(mesh);
+                }
+            }
+        }
+
+        public override void CreateDeviceObjects(GraphicsDevice gd, CommandList cl)
+        {
+            foreach (TexturedMesh mesh in Meshes)
+                mesh.CreateDeviceObjects(gd, cl);
+        }
+
+        public override void Dispose()
+        {
+            foreach (TexturedMesh mesh in Meshes)
+                mesh.Dispose();
+        }
+
+        public override void Render(CommandList cl, Camera camera)
+        {
+            foreach (TexturedMesh mesh in Meshes)
+                mesh.Render(cl, camera);
+        }
+
+        public override void UpdatePerFrameResources(CommandList cl)
+        {
+            foreach (TexturedMesh mesh in Meshes)
+                mesh.UpdatePerFrameResources(cl);
         }
     }
 }

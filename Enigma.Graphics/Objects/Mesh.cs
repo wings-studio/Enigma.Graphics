@@ -1,66 +1,68 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
+﻿using System.Numerics;
 using Veldrid;
 using Veldrid.Utilities;
 
 namespace Enigma.Graphics.Objects
 {
-    public class Mesh : CullRenderable
+    public abstract class Mesh<T> : RenderObject where T : unmanaged, IVertexInfo
     {
-        public override BoundingBox BoundingBox => BoundingBox.Transform(sourceBoundingBox, Transform.GetTransformMatrix());
-        public override RenderPasses RenderPasses => RenderPasses.AllShadowMap;
-        public string Name { private set; get; }
-        public bool DisableShadows { get; set; } = false;
-        public bool DisableShadowDepth { get; set; } = false;
-        public bool DisableReflection { get; set; } = false;
-        public Transform Transform { set; get; }
+        public Transform Transform { get; set; } = new Transform();
+        public override BoundingBox BoundingBox => mesh.GetBoundingBox();
 
-        private readonly MeshData mesh;
-        private readonly BoundingBox sourceBoundingBox;
+        protected IGraphicsStorage Storage => Renderer.Storage;
+        protected readonly IMeshData<T> mesh;
+        protected DeviceBuffer indexBuffer;
+        protected DeviceBuffer vertexBuffer;
+        protected DeviceBuffer projectionBuffer;
+        protected DeviceBuffer viewBuffer;
+        protected DeviceBuffer worldBuffer;
+        protected int indexCount;
 
-        private int indexCount;
-        private DeviceBuffer vertexBuffer, indexBuffer;
-        private Pipeline pipeline;
+        private DisposeCollector collector;
 
-        public Mesh(string name, MeshData data)
+        public Mesh(IMeshData<T> data)
         {
-            Name = name;
             mesh = data;
-            sourceBoundingBox = data.GetBoundingBox();
-            Transform = new Transform();
         }
 
-        public override void CreateDeviceObjects(GraphicsDevice gd, CommandList cl, SceneContext sc)
+        public override void CreateDeviceObjects(GraphicsDevice gd, CommandList cl)
         {
-            ResourceFactory factory = new DisposeCollectorResourceFactory(gd.ResourceFactory);
+            DisposeCollectorResourceFactory drf = new (gd.ResourceFactory);
+            factory = drf;
+            collector = drf.DisposeCollector;
             vertexBuffer = mesh.CreateVertexBuffer(factory, cl);
-            vertexBuffer.Name = Name + "_VB";
             indexBuffer = mesh.CreateIndexBuffer(factory, cl, out indexCount);
-            indexBuffer.Name = Name + "_IB";
-            (Shader vs, Shader fs) = StaticResourceCache.GetShaders(gd, factory, "ShadowMain");
+
+            projectionBuffer = factory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
+            viewBuffer = factory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
+            worldBuffer = factory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
         }
+
+        public override void Render(CommandList cl, Camera camera)
+        {
+            cl.SetPipeline(pipeline);
+            cl.SetIndexBuffer(indexBuffer, IndexFormat.UInt16);
+            cl.SetVertexBuffer(0, vertexBuffer);
+
+            cl.UpdateBuffer(projectionBuffer, 0, camera.ProjectionMatrix);
+            //cl.UpdateBuffer(viewBuffer, 0, camera.ViewMatrix);
+            //cl.UpdateBuffer(projectionBuffer, 0, Matrix4x4.CreatePerspectiveFieldOfView(
+            //    1.0f,
+            //    camera.AspectRatio,
+            //    0.5f,
+            //    100f));
+            cl.UpdateBuffer(viewBuffer, 0, camera.ViewMatrix); //Matrix4x4.CreateLookAt(Vector3.UnitZ * 2.5f, Vector3.Zero, Vector3.UnitY));
+            cl.UpdateBuffer(worldBuffer, 0, Transform.GetTransformMatrix());
+
+            SetGraphicsSet(cl, camera);
+            cl.DrawIndexed((uint)indexCount, 1, 0, 0, 0);
+        }
+
+        protected abstract void SetGraphicsSet(CommandList cl, Camera camera);
 
         public override void Dispose()
         {
-            vertexBuffer.Dispose();
-            indexBuffer.Dispose();
-            pipeline.Dispose();
-        }
-
-        public override RenderOrderKey GetRenderOrderKey(Vector3 cameraPosition)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Render(GraphicsDevice gd, CommandList cl, SceneContext sc, RenderPasses renderPass)
-        {
-        }
-
-        public override void UpdatePerFrameResources(GraphicsDevice gd, CommandList cl, SceneContext sc)
-        {
-            throw new NotImplementedException();
+            collector.DisposeAll();
         }
     }
 }

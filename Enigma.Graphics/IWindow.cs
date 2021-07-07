@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Veldrid;
-using Enigma.Input;
 
 namespace Enigma.Graphics
 {
-    public interface IWindow : IInputable, IUpdateable
+    public interface IWindow : IUpdateable
     {
         string Title { set; get; }
         WindowState State { set; get; }
