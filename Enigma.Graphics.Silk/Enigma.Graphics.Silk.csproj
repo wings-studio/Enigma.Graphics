@@ -13,7 +13,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Vortice.Mathematics" Version="1.3.21" />
+    <PackageReference Include="Silk.NET" Version="2.6.0" />
+    <PackageReference Include="Silk.NET.OpenGL" Version="2.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Enigma.Graphics\Enigma.Graphics.csproj" />
   </ItemGroup>
 
 </Project>
