@@ -12,6 +12,7 @@ namespace Enigma.Graphics.Silk
         public IWindow Window;
 
         private PrimitiveType primitive;
+        private DrawElementsType indexType;
         private PolygonMode fillMode;
 
         public GlDevice()
@@ -27,12 +28,12 @@ namespace Enigma.Graphics.Silk
             Gl = GL.GetApi(Window);
         }
 
-        public GraphicsAPI GraphicsAPI 
-        { 
+        public GraphicsAPI GraphicsAPI
+        {
             get => GraphicsAPI.OpenGL;
-            set 
-            { 
-                if (value != GraphicsAPI.OpenGL) 
+            set
+            {
+                if (value != GraphicsAPI.OpenGL)
                     throw new ArgumentException($"{nameof(GlDevice)} supports only {nameof(GraphicsAPI.OpenGL)}");
             }
         }
@@ -59,7 +60,7 @@ namespace Enigma.Graphics.Silk
 
         public ResourceSet CreateResourceSet(ResourceLayout layout, params IResource[] resources)
         {
-            return new ResourceSet() { resource = layout, resources = resources };   
+            return new ResourceSet() { resource = layout, resources = resources };
         }
 
         public void Dispose()
@@ -72,9 +73,9 @@ namespace Enigma.Graphics.Silk
             //pass
         }
 
-        public void DrawIndexed(uint indexCount, uint instanceCount = 1, uint indexStart = 0, int vertexOffset = 0, uint instanceStart = 0)
+        public unsafe void DrawIndexed(uint indexCount, uint instanceCount = 1, uint indexStart = 0, int vertexOffset = 0, uint instanceStart = 0)
         {
-
+            Gl.DrawElements(primitive, indexCount, indexType, null);
         }
 
         public void End()
@@ -83,7 +84,7 @@ namespace Enigma.Graphics.Silk
 
         public void SetIndexBuffer(IBuffer indexBuffer, IndexFormat format, uint offset = 0)
         {
-            throw new NotImplementedException();
+            indexType = GlUtil.FromEnigmaIndex(format);
         }
 
         public void SetPipeline(Pipeline pipeline)
@@ -119,24 +120,34 @@ namespace Enigma.Graphics.Silk
                 gb.Bind();
                 fixed (void* v = &data[0])
                 {
-                    Gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(data.Length * sizeof(T)), v, BufferUsageARB.StaticDraw); //Setting buffer data.
+                    Gl.BufferData(GlUtil.FromEnigmaBuffer(buffer.Usage), (nuint)(data.Length * sizeof(T)), v, BufferUsageARB.StaticDraw);
                 }
             }
         }
 
-        public void UpdateBuffer<T>(IBuffer buffer, T data, uint offsetInBytes = 0) where T : unmanaged
+        public unsafe void UpdateBuffer<T>(IBuffer buffer, T data, uint offsetInBytes = 0) where T : unmanaged
         {
-            throw new NotImplementedException();
+            if (buffer is GlBuffer gb)
+            {
+                gb.Bind();
+                void* v = &data;
+                Gl.BufferData(GlUtil.FromEnigmaBuffer(buffer.Usage), (nuint)Marshal.SizeOf(data), v, BufferUsageARB.StaticDraw);
+            }
         }
 
         public void UpdateBuffer<T>(IBuffer buffer, ref T data, uint offsetInBytes = 0) where T : unmanaged
         {
-            throw new NotImplementedException();
+            UpdateBuffer(buffer, data, offsetInBytes);
         }
 
-        public void UpdateBuffer(IBuffer buffer, IntPtr data, int sizeInBytes, uint offsetInBytes = 0)
+        public unsafe void UpdateBuffer(IBuffer buffer, IntPtr data, int sizeInBytes, uint offsetInBytes = 0)
         {
-            throw new NotImplementedException();
+            if (buffer is GlBuffer gb)
+            {
+                gb.Bind();
+                void* v = data.ToPointer();
+                Gl.BufferData(GlUtil.FromEnigmaBuffer(buffer.Usage), (nuint)Marshal.SizeOf(data), v, BufferUsageARB.StaticDraw);
+            }
         }
 
         public void UpdateBuffer<T>(IBuffer buffer, ReadOnlySpan<T> source, uint offsetInBytes = 0) where T : unmanaged

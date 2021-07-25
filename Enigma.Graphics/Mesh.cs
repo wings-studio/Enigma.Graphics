@@ -12,7 +12,8 @@ namespace Enigma.Graphics
 
         public Mesh()
         {
-
+            Vertices = new T[0];
+            Indicies = new uint[0];
         }
         public Mesh(T[] vertices, uint[] indicies)
         {
