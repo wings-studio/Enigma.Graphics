@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using Silk.NET.OpenGL;
 
-namespace Enigma.Graphics.Silk
+namespace Enigma.Graphics.Silk.OpenGL
 {
     public class GlPipeline : Pipeline
     {
@@ -28,25 +27,25 @@ namespace Enigma.Graphics.Silk
         {
             glCode = gl.CreateProgram();
             #region Link shaders
-            int shadersLength = shaders.Length;
+            int shadersLength = Shaders.Length;
             uint[] shaderCodes = new uint[shadersLength];
             for (int i = 0; i < shadersLength; i++)
             {
-                if (shaders[i] is GlShader gls)
+                if (Shaders[i] is GlShader gls)
                 {
                     shaderCodes[i] = gls.glCode;
                     gl.AttachShader(glCode, gls.glCode);
                 }
                 else
                     throw new NotSupportedException(
-                        $"{shaders[i]} cannot be added to {nameof(GlPipeline)} because it's not {nameof(GlShader)}");
+                        $"{Shaders[i]} cannot be added to {nameof(GlPipeline)} because it's not {nameof(GlShader)}");
             }
             #endregion
             #region Bind vertex elements
-            for (int i = 0; i < vertexElements.Length; i++)
+            for (int i = 0; i < VertexElements.Length; i++)
             {
                 // https://github.com/mellinoe/veldrid/blob/7c248955fb4666a6df177932d44add206636959f/src/Veldrid/OpenGL/OpenGLPipeline.cs#L125
-                gl.BindAttribLocation(glCode, (uint)i, vertexElements[i].Name.ToGL());
+                gl.BindAttribLocation(glCode, (uint)i, VertexElements[i].Name.ToGL());
             }
             #endregion
             gl.LinkProgram(glCode);

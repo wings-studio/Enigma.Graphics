@@ -2,15 +2,15 @@
 {
     public class ResourceElement
     {
-        public string name;
-        public ResourceKind kind;
-        public ShaderStage stage;
+        public readonly string Name;
+        public readonly ResourceKind Kind;
+        public readonly ShaderStage Stage;
 
         public ResourceElement(string name, ResourceKind kind, ShaderStage stage)
         {
-            this.name = name;
-            this.kind = kind;
-            this.stage = stage;
+            Name = name;
+            Kind = kind;
+            Stage = stage;
         }
     }
 }

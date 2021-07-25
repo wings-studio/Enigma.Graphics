@@ -46,8 +46,8 @@ namespace Enigma.Graphics
         /// <param name="vertexOffset">The base vertex value, which is added to each index value read from the index buffer.</param>
         /// <param name="instanceStart">The starting instance value.</param>
         void DrawIndexed(uint indexCount, uint instanceCount = 1, uint indexStart = 0, int vertexOffset = 0, uint instanceStart = 0);
-        //void DrawIndirect(IBuffer indirectBuffer, uint offset, uint drawCount, uint stride);
-        //void DrawIndexedIndirect(IBuffer indirectBuffer, uint offset, uint drawCount, uint stride);
+        void DrawIndirect(IBuffer indirectBuffer, uint offset, uint drawCount, uint stride);
+        void DrawIndexedIndirect(IBuffer indirectBuffer, uint offset, uint drawCount, uint stride);
 
         void ClearColor(Color color);
         void Begin();

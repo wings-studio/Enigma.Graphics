@@ -1,8 +1,7 @@
 ﻿using System.Runtime.InteropServices;
-using System;
 using Silk.NET.OpenGL;
 
-namespace Enigma.Graphics.Silk
+namespace Enigma.Graphics.Silk.OpenGL
 {
     public class GlVertexArray : GlBuffer
     {

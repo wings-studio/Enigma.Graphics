@@ -1,7 +1,7 @@
 ﻿using System;
 using Silk.NET.OpenGL;
 
-namespace Enigma.Graphics.Silk
+namespace Enigma.Graphics.Silk.OpenGL
 {
     public class GlBuffer : IBuffer
     {

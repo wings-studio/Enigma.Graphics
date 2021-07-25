@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Silk.NET.OpenGL;
 
-namespace Enigma.Graphics.Silk
+namespace Enigma.Graphics.Silk.OpenGL
 {
     public class GlShader : IShader
     {

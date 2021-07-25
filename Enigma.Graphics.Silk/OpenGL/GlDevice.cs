@@ -4,13 +4,14 @@ using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Vortice.Mathematics;
 
-namespace Enigma.Graphics.Silk
+namespace Enigma.Graphics.Silk.OpenGL
 {
-    public class GlDevice : IGraphicsDevice
+    public sealed class GlDevice : IGraphicsDevice
     {
         public GL Gl;
         public IWindow Window;
 
+        private GlPipeline pipeline;
         private PrimitiveType primitive;
         private DrawElementsType indexType;
         private PolygonMode fillMode;
@@ -34,7 +35,7 @@ namespace Enigma.Graphics.Silk
             set
             {
                 if (value != GraphicsAPI.OpenGL)
-                    throw new ArgumentException($"{nameof(GlDevice)} supports only {nameof(GraphicsAPI.OpenGL)}");
+                    throw new SilkGlException($"{nameof(GlDevice)} supports only {nameof(GraphicsAPI.OpenGL)}");
             }
         }
 
@@ -53,10 +54,7 @@ namespace Enigma.Graphics.Silk
             if (usage == BufferUsage.VertexBuffer)
                 return new GlVertexArray(Gl, size);
             else
-            {
-                GlBuffer buffer = new GlBuffer(Gl, size, usage);
-                return buffer;
-            }
+                return new GlBuffer(Gl, size, usage);
         }
 
         public ResourceSet CreateResourceSet(ResourceLayout layout, params IResource[] resources)
@@ -71,7 +69,7 @@ namespace Enigma.Graphics.Silk
 
         public void Draw(uint vertexCount, uint instanceCount = 1, uint vertexStart = 0, uint instanceStart = 0)
         {
-            //pass
+            throw new NotImplementedException();
         }
 
         public unsafe void DrawIndexed(uint indexCount, uint instanceCount = 1, uint indexStart = 0, int vertexOffset = 0, uint instanceStart = 0)
@@ -90,15 +88,16 @@ namespace Enigma.Graphics.Silk
 
         public void SetPipeline(Pipeline pipeline)
         {
-            primitive = GlUtil.FromEnigmaPrimtive(pipeline.topology);
-            fillMode = GlUtil.FromEnigmaPolygon(pipeline.fillMode);
+            primitive = GlUtil.FromEnigmaPrimtive(pipeline.Topology);
+            fillMode = GlUtil.FromEnigmaPolygon(pipeline.FillMode);
             if (pipeline is GlPipeline glp)
             {
                 Gl.UseProgram(glp.glCode);
+                this.pipeline = glp;
             }
             else
             {
-                throw new Exception($"Pipeline must be {nameof(GlPipeline)} type");
+                throw new SilkGlException($"Pipeline must be {nameof(GlPipeline)} type");
             }
         }
 
@@ -106,7 +105,11 @@ namespace Enigma.Graphics.Silk
         {
             for (int i = 0; i < resourceSet.Resources.Length; i++)
             {
-                ResourceElement re = resourceSet.Layout.elements[i];
+                ResourceElement re = resourceSet.Layout.Elements[i];
+                if (re.Kind == ResourceKind.UniformBuffer)
+                {
+                    int uniform = Gl.GetUniformLocation(pipeline.glCode, re.Name.ToGL());
+                }
             }
         }
 
@@ -115,7 +118,7 @@ namespace Enigma.Graphics.Silk
             if (vertexBuffer is GlVertexArray gvb)
                 Gl.BindVertexArray(gvb.GlArrayCode);
             else
-                throw new ArgumentException($"{nameof(vertexBuffer)} must be {nameof(GlVertexArray)} type");
+                throw new SilkGlException($"{nameof(vertexBuffer)} must be {nameof(GlVertexArray)} type");
         }
 
         public unsafe void UpdateBuffer<T>(IBuffer buffer, T[] data, uint offsetInBytes = 0) where T : unmanaged
@@ -169,5 +172,15 @@ namespace Enigma.Graphics.Silk
 
         public Pipeline CreatePipeline(PrimitiveTopology topology, PolygonFillMode fillMode, IShader[] shaders, VertexElement[] vertexElements, params ResourceLayout[] resources)
             => new GlPipeline(Gl, topology, fillMode, shaders, vertexElements, resources);
+
+        public void DrawIndirect(IBuffer indirectBuffer, uint offset, uint drawCount, uint stride)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DrawIndexedIndirect(IBuffer indirectBuffer, uint offset, uint drawCount, uint stride)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

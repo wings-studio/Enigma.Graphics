@@ -2,7 +2,7 @@
 using Silk.NET.OpenGL;
 using System.Runtime.InteropServices;
 
-namespace Enigma.Graphics.Silk
+namespace Enigma.Graphics.Silk.OpenGL
 {
     public static class GlUtil
     {
