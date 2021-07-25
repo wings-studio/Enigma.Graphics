@@ -40,6 +40,7 @@ namespace Enigma.Graphics.Silk
 
         public void Begin()
         {
+            ClearColor(new Color(0));
         }
 
         public void ClearColor(Color color)
@@ -60,7 +61,7 @@ namespace Enigma.Graphics.Silk
 
         public ResourceSet CreateResourceSet(ResourceLayout layout, params IResource[] resources)
         {
-            return new ResourceSet() { resource = layout, resources = resources };
+            return new ResourceSet(layout, resources);
         }
 
         public void Dispose()
@@ -90,19 +91,23 @@ namespace Enigma.Graphics.Silk
         public void SetPipeline(Pipeline pipeline)
         {
             primitive = GlUtil.FromEnigmaPrimtive(pipeline.topology);
+            fillMode = GlUtil.FromEnigmaPolygon(pipeline.fillMode);
             if (pipeline is GlPipeline glp)
             {
                 Gl.UseProgram(glp.glCode);
+            }
+            else
+            {
+                throw new Exception($"Pipeline must be {nameof(GlPipeline)} type");
             }
         }
 
         public unsafe void SetResourceSet(int index, ResourceSet resourceSet)
         {
-            foreach (IResource resource in resourceSet.resources)
+            for (int i = 0; i < resourceSet.Resources.Length; i++)
             {
-                Gl.VertexAttribPointer((uint)index, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), null);
+                ResourceElement re = resourceSet.Layout.elements[i];
             }
-            Gl.EnableVertexAttribArray((uint)index);
         }
 
         public void SetVertexBuffer(uint index, IBuffer vertexBuffer, uint offset = 0)
@@ -159,10 +164,10 @@ namespace Enigma.Graphics.Silk
 
         public IShader LoadShader(string shader, ShaderStage stage) => new GlShader(Gl, shader, stage);
 
-        public Pipeline CreatePipeline(IShader[] shaders, params ResourceLayout[] resources)
-            => new GlPipeline(Gl, shaders, resources);
+        public Pipeline CreatePipeline(IShader[] shaders, VertexElement[] vertexElements, params ResourceLayout[] resources)
+            => new GlPipeline(Gl, shaders, vertexElements, resources);
 
-        public Pipeline CreatePipeline(PrimitiveTopology topology, PolygonFillMode fillMode, IShader[] shaders, params ResourceLayout[] resources)
-            => new GlPipeline(Gl, topology, fillMode, shaders, resources);
+        public Pipeline CreatePipeline(PrimitiveTopology topology, PolygonFillMode fillMode, IShader[] shaders, VertexElement[] vertexElements, params ResourceLayout[] resources)
+            => new GlPipeline(Gl, topology, fillMode, shaders, vertexElements, resources);
     }
 }

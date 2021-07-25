@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Enigma.Graphics
+﻿namespace Enigma.Graphics
 {
     public class ResourceSet
     {
-        public ResourceLayout resource;
-        public IResource[] resources;
+        public ResourceLayout Layout;
+        public IResource[] Resources;
+
+        public ResourceSet(ResourceLayout layout, params IResource[] resources)
+        {
+            Layout = layout;
+            Resources = resources;
+        }
     }
 }

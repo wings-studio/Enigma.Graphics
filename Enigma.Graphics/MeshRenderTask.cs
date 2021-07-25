@@ -57,12 +57,19 @@ out vec4 FragColor;
         {
             IShader vs = gd.LoadShader(VertexShaderSource, ShaderStage.Vertex);
             IShader fs = gd.LoadShader(FragmentShaderSource, ShaderStage.Fragment);
+            VertexElement[] vertexLayout = new[]
+            {
+                new VertexElement(3, "vPos", VertexElementType.Float),
+                new VertexElement(4, "vColor", VertexElementType.Float)
+            };
             ResourceLayout layout = new ResourceLayout(
                 new ResourceElement("uBlue", ResourceKind.UniformBuffer, ShaderStage.Vertex)
                 );
-            pipeline = gd.CreatePipeline(new[] { vs, fs }, layout);
+            pipeline = gd.CreatePipeline(new[] { vs, fs }, vertexLayout, layout);
             foreach (var mesh in scene.meshes)
-                resources.Add(gd.CreateResourceSet(layout));
+                resources.Add(gd.CreateResourceSet(layout, 
+                    new Resource<float>((float)Math.Sin(DateTime.Now.Millisecond / 1000f * Math.PI)) // uBlue
+                    ));
         }
 
         public override void Render(IGraphicsDevice gd, MeshScene<T> scene, int meshIndex)

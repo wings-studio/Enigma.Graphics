@@ -10,8 +10,8 @@ namespace Enigma.Graphics
 
         ResourceSet CreateResourceSet(ResourceLayout layout, params IResource[] resources);
         void SetResourceSet(int index, ResourceSet resourceSet);
-        Pipeline CreatePipeline(IShader[] shaders, params ResourceLayout[] resources);
-        Pipeline CreatePipeline(PrimitiveTopology topology, PolygonFillMode fillMode, IShader[] shaders, params ResourceLayout[] resources);
+        Pipeline CreatePipeline(IShader[] shaders, VertexElement[] vertexElements, params ResourceLayout[] resources);
+        Pipeline CreatePipeline(PrimitiveTopology topology, PolygonFillMode fillMode, IShader[] shaders, VertexElement[] vertexElements, params ResourceLayout[] resources);
         void SetPipeline(Pipeline pipeline);
 
 

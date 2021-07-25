@@ -58,5 +58,43 @@ namespace Enigma.Graphics.Silk
                 _ => 0
             };
         }
+
+        public static VertexAttribPointerType FromEnigmaVertex(VertexElementType vertexElement)
+        {
+            return vertexElement switch
+            {
+                VertexElementType.Byte => VertexAttribPointerType.UnsignedByte,
+                VertexElementType.Float => VertexAttribPointerType.Float,
+                VertexElementType.Int => VertexAttribPointerType.Int,
+                VertexElementType.UInt => VertexAttribPointerType.UnsignedInt,
+                VertexElementType.Short => VertexAttribPointerType.Short,
+                VertexElementType.UShort => VertexAttribPointerType.UnsignedShort,
+                VertexElementType.SByte => VertexAttribPointerType.Byte,
+                VertexElementType.Half => VertexAttribPointerType.HalfFloat,
+                _ => 0
+            };
+        }
+
+        public static PolygonMode FromEnigmaPolygon(PolygonFillMode fillMode)
+        {
+            return fillMode switch
+            {
+                PolygonFillMode.Solid => PolygonMode.Fill,
+                PolygonFillMode.Wireframe => PolygonMode.Line,
+                _ => 0
+            };
+        }
+
+        public static unsafe byte* ToGL(this string str)
+        {
+            int byteCount = System.Text.Encoding.UTF8.GetByteCount(str) + 1;
+            byte* elementNamePtr = stackalloc byte[byteCount];
+            fixed (char* charPtr = str)
+            {
+                int bytesWritten = System.Text.Encoding.UTF8.GetBytes(charPtr, str.Length, elementNamePtr, byteCount);
+            }
+            elementNamePtr[byteCount - 1] = 0; // Add null terminator.
+            return elementNamePtr;
+        }
     }
 }
