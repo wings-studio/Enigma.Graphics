@@ -109,6 +109,9 @@ namespace Enigma.Graphics.Silk.OpenGL
                 if (re.Kind == ResourceKind.UniformBuffer)
                 {
                     int uniform = Gl.GetUniformLocation(pipeline.glCode, re.Name.ToGL());
+                    IResource res = resourceSet.Resources[i];
+                    uint size = resourceSet.Resources[i].Size;
+                    
                 }
             }
         }

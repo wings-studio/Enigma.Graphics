@@ -1,11 +1,7 @@
-﻿using System;
-using System.Numerics;
-
-namespace Enigma.Graphics
+﻿namespace Enigma.Graphics
 {
-    public interface IBuffer : IDisposable, IResource
+    public interface IBuffer : System.IDisposable, IResource
     {
-        uint Size { set; get; }
         BufferUsage Usage { set; get; }
     }
 }

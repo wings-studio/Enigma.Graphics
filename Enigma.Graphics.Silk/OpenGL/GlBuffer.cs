@@ -6,10 +6,19 @@ namespace Enigma.Graphics.Silk.OpenGL
     public class GlBuffer : IBuffer
     {
         public uint GlCode;
-        public uint Size { get; set; }
+        public uint Size => size;
+        public IntPtr Data
+        {
+            get
+            {
+                gl.GetBufferSubData(GlUtil.FromEnigmaBuffer(Usage), 0, Size, out IntPtr data);
+                return data;
+            }
+        }
         public virtual BufferUsage Usage { get; set; }
 
         protected readonly GL gl;
+        protected readonly uint size;
 
         public GlBuffer(GL gl)
         {
@@ -18,7 +27,7 @@ namespace Enigma.Graphics.Silk.OpenGL
         }
         public GlBuffer(GL gl, int size, BufferUsage usage) : this(gl)
         {
-            Size = Convert.ToUInt32(size);
+            this.size = Convert.ToUInt32(size);
             Usage = usage;
         }
 
