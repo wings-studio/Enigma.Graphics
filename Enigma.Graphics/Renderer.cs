@@ -35,13 +35,13 @@ namespace Enigma.Graphics
                 scene.CreateResources(GraphicsDevice);
         }
 
-        public virtual void BeginFrame() => GraphicsDevice.Begin();
-        public virtual void RenderFrame()
+        protected virtual void BeginFrame() => GraphicsDevice.Begin();
+        protected virtual void RenderFrame()
         {
             foreach (Scene scene in scenes.Values)
                 scene.Render(GraphicsDevice);
         }
-        public virtual void EndFrame() => GraphicsDevice.End();
+        protected virtual void EndFrame() => GraphicsDevice.End();
 
         #region IDictionary methods
         public Scene this[string key] { get => ((IDictionary<string, Scene>)scenes)[key]; set => ((IDictionary<string, Scene>)scenes)[key] = value; }

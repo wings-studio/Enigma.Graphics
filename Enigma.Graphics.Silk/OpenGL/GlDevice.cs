@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
@@ -10,17 +11,20 @@ namespace Enigma.Graphics.Silk.OpenGL
     {
         public GL Gl;
         public IWindow Window;
+        public Color4 ColorOfClear;
 
         private GlPipeline pipeline;
         private PrimitiveType primitive;
         private DrawElementsType indexType;
         private PolygonMode fillMode;
         private uint ibOffset = 0;
+        private string resourceName = "";
 
         public GlDevice(IWindow window)
         {
             Window = window;
             Window.Load += OnLoad;
+            ColorOfClear = Color4.Blue;
         }
 
         private void OnLoad()
@@ -40,12 +44,12 @@ namespace Enigma.Graphics.Silk.OpenGL
 
         public void Begin()
         {
-            ClearColor(new Color(0));
+            ClearColor(ColorOfClear);
         }
 
-        public void ClearColor(Color color)
+        public void ClearColor(Color4 color)
         {
-            Gl.ClearColor(color.R, color.G, color.B, color.A);
+            Gl.ClearColor((System.Drawing.Color)color);
         }
 
         public IBuffer CreateBuffer(int size, BufferUsage usage)
@@ -163,40 +167,10 @@ namespace Enigma.Graphics.Silk.OpenGL
 
         public unsafe void SetResourceSet(int index, ResourceSet resourceSet)
         {
-            uint program = pipeline.GlCode;
             for (int i = 0; i < resourceSet.Resources.Length; i++)
             {
-                ResourceElement re = resourceSet.Layout.Elements[i];
-                switch (re.Kind)
-                {
-                    case ResourceKind.UniformBuffer:
-                        {
-                            IBuffer buf = resourceSet.Resources[i].GetBuffer(this, BufferUsage.UniformBuffer);
-                            if (buf is GlBuffer glb)
-                            {
-                                uint blockIndex = Gl.GetUniformBlockIndex(program, re.Name.ToGL());
-                                Gl.GetActiveUniformBlock(program, blockIndex, GLEnum.UniformBlockDataSize, out int blockSize);
-                                Gl.UniformBlockBinding(program, blockIndex, (uint)i);
-                                Gl.BindBufferRange(GlUtil.FromEnigmaBuffer(glb.Usage), blockIndex, glb.GlCode, 0, (nuint)blockSize);
-                                break;
-                            }
-                            else
-                                throw new SilkGlException($"Resource generates buffer with wrong type (it's not {nameof(GlBuffer)})");
-                        }
-
-                    case ResourceKind.StructuredBufferReadOnly:
-                        break;
-                    case ResourceKind.StructuredBufferReadWrite:
-                        break;
-                    case ResourceKind.TextureReadOnly:
-                        break;
-                    case ResourceKind.TextureReadWrite:
-                        break;
-                    case ResourceKind.Sampler:
-                        break;
-                    default:
-                        break;
-                }
+                resourceName = resourceSet.Layout.Elements[i].Name;
+                resourceSet.Resources[i].SetResources(this);
             }
         }
 
@@ -269,5 +243,42 @@ namespace Enigma.Graphics.Silk.OpenGL
         {
             throw new NotImplementedException();
         }
+
+        public void SetUniform1(int value) => Gl.Uniform1(GetLocation(), value);
+
+        public void SetUniform1(double value) => Gl.Uniform1(GetLocation(), value);
+
+        public void SetUniform1(float value) => Gl.Uniform1(GetLocation(), value);
+
+        public void SetUniform2(Vector2 value) => Gl.Uniform2(GetLocation(), value);
+
+        public void SetUniform3(Vector3 value) => Gl.Uniform3(GetLocation(), value);
+
+        public void SetUniform4(Vector4 value) => Gl.Uniform4(GetLocation(), value);
+
+        public void SetUniformMatrix4x4(Matrix4x4 matrix) 
+            => Gl.UniformMatrix4(GetLocation(), transpose: false, new ReadOnlySpan<float>(new float[] {
+                matrix.M11, matrix.M12, matrix.M13, matrix.M14,
+                matrix.M21, matrix.M22, matrix.M23, matrix.M24,
+                matrix.M31, matrix.M32, matrix.M33, matrix.M34,
+                matrix.M41, matrix.M42, matrix.M43, matrix.M44
+            }));
+
+        public void SetUniformMatrix3x2(Matrix3x2 matrix)
+            => Gl.UniformMatrix3x2(GetLocation(), transpose: false, new ReadOnlySpan<float>(new float[] {
+                matrix.M11, matrix.M12,
+                matrix.M21, matrix.M22,
+                matrix.M31, matrix.M32
+            }));
+
+        public void SetUniformBuffer(IBuffer buffer)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Get location of uniform with name <see cref="resourceName"/>
+        /// </summary>
+        private unsafe int GetLocation() => Gl.GetUniformLocation(pipeline.GlCode, resourceName.ToGL());
     }
 }

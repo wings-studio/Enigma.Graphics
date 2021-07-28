@@ -32,12 +32,9 @@ namespace Enigma.Graphics.Silk.OpenGL
             gl.DeleteBuffer(GlCode);
         }
 
-        public IBuffer GetBuffer(IGraphicsDevice graphicsDevice, BufferUsage bufferUsage)
+        public void SetResources(IGraphicsDevice graphicsDevice)
         {
-            if (Usage == bufferUsage)
-                return this;
-            else
-                throw new SilkGlException($"{nameof(BufferUsage)} is not equals with usage of current buffer");
+            graphicsDevice.SetUniformBuffer(this);
         }
     }
 }

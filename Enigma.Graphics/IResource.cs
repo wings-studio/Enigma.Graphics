@@ -2,6 +2,6 @@
 {
     public interface IResource
     {
-        IBuffer GetBuffer(IGraphicsDevice graphicsDevice, BufferUsage bufferUsage);
+        void SetResources(IGraphicsDevice graphicsDevice);
     }
 }

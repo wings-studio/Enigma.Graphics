@@ -20,7 +20,7 @@ layout(location = 0) in vec3 vPos;
 
         //This is how we declare a uniform, they can be used in all our shaders and share the same name.
         //This is prefixed with a u as it's our uniform.
-        uniform float uBlue;
+        uniform float Blue;
 
 //This is our output variable, notice that this is prefixed with an f as it's the input of our fragment shader.
 out vec4 fColor;
@@ -30,7 +30,7 @@ out vec4 fColor;
             //gl_Position, is a built-in variable on all vertex shaders that will specify the position of our vertex.
             gl_Position = vec4(vPos, 1.0);
             //The rest of this code looks like plain old c (almost c#)
-            vec4 color = vec4(vColor.rb / 2, uBlue, vColor.a); //Swizzling and constructors in glsl.
+            vec4 color = vec4(vColor.rb / 2, Blue, vColor.a); //Swizzling and constructors in glsl.
             fColor = color;
         }";
 
@@ -62,12 +62,12 @@ out vec4 FragColor;
                 new VertexElement(4, "vColor", VertexElementType.Float)
             };
             ResourceLayout layout = new ResourceLayout(
-                new ResourceElement("uBlue", ResourceKind.UniformBuffer, ShaderStage.Vertex)
+                new ResourceElement("Blue", ResourceKind.UniformBuffer, ShaderStage.Vertex)
                 );
             pipeline = gd.CreatePipeline(new[] { vs, fs }, vertexLayout, layout);
             foreach (var mesh in scene.Meshes)
                 resources.Add(gd.CreateResourceSet(layout, 
-                    new Resource<float>((float)Math.Sin(DateTime.Now.Millisecond / 1000f * Math.PI)) // uBlue
+                    new FloatResource((float)Math.Sin(DateTime.Now.Millisecond / 1000f * Math.PI))
                     ));
         }
 
