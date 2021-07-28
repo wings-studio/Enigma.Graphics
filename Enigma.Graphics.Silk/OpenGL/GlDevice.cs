@@ -15,13 +15,12 @@ namespace Enigma.Graphics.Silk.OpenGL
         private PrimitiveType primitive;
         private DrawElementsType indexType;
         private PolygonMode fillMode;
+        private uint ibOffset = 0;
 
-        public GlDevice()
+        public GlDevice(IWindow window)
         {
-            Window = global::Silk.NET.Windowing.Window.Create(WindowOptions.Default);
+            Window = window;
             Window.Load += OnLoad;
-
-            Window.Run();
         }
 
         private void OnLoad()
@@ -69,12 +68,68 @@ namespace Enigma.Graphics.Silk.OpenGL
 
         public void Draw(uint vertexCount, uint instanceCount = 1, uint vertexStart = 0, uint instanceStart = 0)
         {
-            throw new NotImplementedException();
+            // https://github.com/mellinoe/veldrid/blob/7c248955fb4666a6df177932d44add206636959f/src/Veldrid/OpenGL/OpenGLCommandExecutor.cs#L123
+            if (instanceCount == 1 && instanceStart == 0)
+            {
+                Gl.DrawArrays(primitive, (int)vertexStart, vertexCount);
+            }
+            else
+            {
+                if (instanceStart == 0)
+                {
+                    Gl.DrawArraysInstanced(primitive, (int)vertexStart, vertexCount, instanceCount);
+                }
+                else
+                {
+                    Gl.DrawArraysInstancedBaseInstance(primitive, (int)vertexStart, vertexCount, instanceCount, instanceStart);
+                }
+            }
         }
 
         public unsafe void DrawIndexed(uint indexCount, uint instanceCount = 1, uint indexStart = 0, int vertexOffset = 0, uint instanceStart = 0)
         {
-            Gl.DrawElements(primitive, indexCount, indexType, null);
+            // https://github.com/mellinoe/veldrid/blob/7c248955fb4666a6df177932d44add206636959f/src/Veldrid/OpenGL/OpenGLCommandExecutor.cs#L143
+            uint indexSize = indexType == DrawElementsType.UnsignedShort ? 2u : 4u;
+            void* indices = (void*)((indexStart * indexSize) + ibOffset);
+            if (instanceCount == 1 && instanceStart == 0)
+            {
+                if (vertexOffset == 0)
+                {
+                    Gl.DrawElements(primitive, indexCount, indexType, indices);
+                }
+                else
+                {
+                    Gl.DrawElementsBaseVertex(primitive, indexCount, indexType, indices, vertexOffset);
+                }
+            }
+            else
+            {
+                if (instanceStart > 0)
+                {
+                    Gl.DrawElementsInstancedBaseVertexBaseInstance(
+                        primitive,
+                        indexCount,
+                        indexType,
+                        indices,
+                        instanceCount,
+                        vertexOffset,
+                        instanceStart);
+                }
+                else if (vertexOffset == 0)
+                {
+                    Gl.DrawElementsInstanced(primitive, indexCount, indexType, indices, instanceCount);
+                }
+                else
+                {
+                    Gl.DrawElementsInstancedBaseVertex(
+                        primitive,
+                        indexCount,
+                        indexType,
+                        indices,
+                        instanceCount,
+                        vertexOffset);
+                }
+            }
         }
 
         public void End()
@@ -84,6 +139,11 @@ namespace Enigma.Graphics.Silk.OpenGL
         public void SetIndexBuffer(IBuffer indexBuffer, IndexFormat format, uint offset = 0)
         {
             indexType = GlUtil.FromEnigmaIndex(format);
+            ibOffset = offset;
+            if (indexBuffer is GlBuffer glib)
+                glib.Bind();
+            else
+                throw new SilkGlException($"Buffer must has type {nameof(GlBuffer)}");
         }
 
         public void SetPipeline(Pipeline pipeline)
@@ -92,7 +152,7 @@ namespace Enigma.Graphics.Silk.OpenGL
             fillMode = GlUtil.FromEnigmaPolygon(pipeline.FillMode);
             if (pipeline is GlPipeline glp)
             {
-                Gl.UseProgram(glp.glCode);
+                Gl.UseProgram(glp.GlCode);
                 this.pipeline = glp;
             }
             else
@@ -103,15 +163,39 @@ namespace Enigma.Graphics.Silk.OpenGL
 
         public unsafe void SetResourceSet(int index, ResourceSet resourceSet)
         {
+            uint program = pipeline.GlCode;
             for (int i = 0; i < resourceSet.Resources.Length; i++)
             {
                 ResourceElement re = resourceSet.Layout.Elements[i];
-                if (re.Kind == ResourceKind.UniformBuffer)
+                switch (re.Kind)
                 {
-                    int uniform = Gl.GetUniformLocation(pipeline.glCode, re.Name.ToGL());
-                    IResource res = resourceSet.Resources[i];
-                    uint size = resourceSet.Resources[i].Size;
-                    
+                    case ResourceKind.UniformBuffer:
+                        {
+                            IBuffer buf = resourceSet.Resources[i].GetBuffer(this, BufferUsage.UniformBuffer);
+                            if (buf is GlBuffer glb)
+                            {
+                                uint blockIndex = Gl.GetUniformBlockIndex(program, re.Name.ToGL());
+                                Gl.GetActiveUniformBlock(program, blockIndex, GLEnum.UniformBlockDataSize, out int blockSize);
+                                Gl.UniformBlockBinding(program, blockIndex, (uint)i);
+                                Gl.BindBufferRange(GlUtil.FromEnigmaBuffer(glb.Usage), blockIndex, glb.GlCode, 0, (nuint)blockSize);
+                                break;
+                            }
+                            else
+                                throw new SilkGlException($"Resource generates buffer with wrong type (it's not {nameof(GlBuffer)})");
+                        }
+
+                    case ResourceKind.StructuredBufferReadOnly:
+                        break;
+                    case ResourceKind.StructuredBufferReadWrite:
+                        break;
+                    case ResourceKind.TextureReadOnly:
+                        break;
+                    case ResourceKind.TextureReadWrite:
+                        break;
+                    case ResourceKind.Sampler:
+                        break;
+                    default:
+                        break;
                 }
             }
         }

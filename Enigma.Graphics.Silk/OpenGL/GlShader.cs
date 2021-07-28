@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Silk.NET.OpenGL;
 
 namespace Enigma.Graphics.Silk.OpenGL
@@ -7,14 +6,14 @@ namespace Enigma.Graphics.Silk.OpenGL
     public class GlShader : IShader
     {
         public ShaderStage Stage { get; set; }
-        public uint glCode;
+        public uint GlCode;
 
         protected readonly GL gl;
 
         public GlShader(GL Gl, ShaderStage stage)
         {
             gl = Gl;
-            glCode = gl.CreateShader(GlUtil.FromEnigmaShader(stage));
+            GlCode = gl.CreateShader(GlUtil.FromEnigmaShader(stage));
             Stage = stage;
         }
         public GlShader(GL Gl, string source, ShaderStage stage) : this(Gl, stage)
@@ -30,22 +29,28 @@ namespace Enigma.Graphics.Silk.OpenGL
 
         public void LoadSources(string source)
         {
-            gl.ShaderSource(glCode, source);
+            gl.ShaderSource(GlCode, source);
         }
         public unsafe void LoadByteCode(byte[] code)
         {
             fixed (byte* data = code)
             {
+                throw new NotImplementedException();
             }
         }
         public void CompileShader()
         {
-            gl.CompileShader(glCode);
-            string infoLog = gl.GetShaderInfoLog(glCode);
+            gl.CompileShader(GlCode);
+            string infoLog = gl.GetShaderInfoLog(GlCode);
             if (!string.IsNullOrWhiteSpace(infoLog))
             {
-                Console.WriteLine($"Error compiling shader {infoLog}");
+                Console.WriteLine($"Error compiling OpenGL shader {infoLog}");
             }
+        }
+
+        public void Dispose()
+        {
+            gl.DeleteShader(GlCode);
         }
     }
 }

@@ -5,7 +5,7 @@ namespace Enigma.Graphics.Silk.OpenGL
 {
     public class GlPipeline : Pipeline
     {
-        public uint glCode;
+        public uint GlCode;
 
         protected readonly GL gl;
 
@@ -25,7 +25,7 @@ namespace Enigma.Graphics.Silk.OpenGL
 
         private unsafe void Create()
         {
-            glCode = gl.CreateProgram();
+            GlCode = gl.CreateProgram();
             #region Link shaders
             int shadersLength = Shaders.Length;
             uint[] shaderCodes = new uint[shadersLength];
@@ -33,8 +33,8 @@ namespace Enigma.Graphics.Silk.OpenGL
             {
                 if (Shaders[i] is GlShader gls)
                 {
-                    shaderCodes[i] = gls.glCode;
-                    gl.AttachShader(glCode, gls.glCode);
+                    shaderCodes[i] = gls.GlCode;
+                    gl.AttachShader(GlCode, gls.GlCode);
                 }
                 else
                     throw new NotSupportedException(
@@ -45,10 +45,10 @@ namespace Enigma.Graphics.Silk.OpenGL
             for (int i = 0; i < VertexElements.Length; i++)
             {
                 // https://github.com/mellinoe/veldrid/blob/7c248955fb4666a6df177932d44add206636959f/src/Veldrid/OpenGL/OpenGLPipeline.cs#L125
-                gl.BindAttribLocation(glCode, (uint)i, VertexElements[i].Name.ToGL());
+                gl.BindAttribLocation(GlCode, (uint)i, VertexElements[i].Name.ToGL());
             }
             #endregion
-            gl.LinkProgram(glCode);
+            gl.LinkProgram(GlCode);
             //#region Remove individual shaders
             //for (int i = 0; i < shadersLength; i++)
             //{

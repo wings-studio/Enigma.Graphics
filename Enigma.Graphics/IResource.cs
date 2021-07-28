@@ -1,8 +1,7 @@
 ﻿namespace Enigma.Graphics
 {
     public interface IResource
-    { 
-        uint Size { get; }
-        System.IntPtr Data { get; }
+    {
+        IBuffer GetBuffer(IGraphicsDevice graphicsDevice, BufferUsage bufferUsage);
     }
 }

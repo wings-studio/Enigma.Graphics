@@ -6,19 +6,10 @@ namespace Enigma.Graphics.Silk.OpenGL
     public class GlBuffer : IBuffer
     {
         public uint GlCode;
-        public uint Size => size;
-        public IntPtr Data
-        {
-            get
-            {
-                gl.GetBufferSubData(GlUtil.FromEnigmaBuffer(Usage), 0, Size, out IntPtr data);
-                return data;
-            }
-        }
+        public uint Size { get; }
         public virtual BufferUsage Usage { get; set; }
 
         protected readonly GL gl;
-        protected readonly uint size;
 
         public GlBuffer(GL gl)
         {
@@ -27,7 +18,7 @@ namespace Enigma.Graphics.Silk.OpenGL
         }
         public GlBuffer(GL gl, int size, BufferUsage usage) : this(gl)
         {
-            this.size = Convert.ToUInt32(size);
+            Size = Convert.ToUInt32(size);
             Usage = usage;
         }
 
@@ -39,6 +30,14 @@ namespace Enigma.Graphics.Silk.OpenGL
         public void Dispose()
         {
             gl.DeleteBuffer(GlCode);
+        }
+
+        public IBuffer GetBuffer(IGraphicsDevice graphicsDevice, BufferUsage bufferUsage)
+        {
+            if (Usage == bufferUsage)
+                return this;
+            else
+                throw new SilkGlException($"{nameof(BufferUsage)} is not equals with usage of current buffer");
         }
     }
 }

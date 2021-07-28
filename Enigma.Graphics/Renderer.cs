@@ -7,13 +7,27 @@ namespace Enigma.Graphics
 {
     public abstract class Renderer : IDisposable, IDictionary<string, Scene>
     {
-        protected readonly Dictionary<string, Scene> scenes = new ();
+        public virtual bool IsRunning { get; set; } = false;
+
+        protected readonly Dictionary<string, Scene> scenes = new Dictionary<string, Scene>();
 
         public GraphicsAPI GraphicsAPI { get => GraphicsDevice.GraphicsAPI; set => GraphicsDevice.GraphicsAPI = value; }
 
         public IGraphicsDevice GraphicsDevice { get; protected set; }
 
         public virtual void Dispose() => GraphicsDevice.Dispose();
+
+        public virtual void Render()
+        {
+            IsRunning = true;
+            CreateResources();
+            while (IsRunning)
+            {
+                BeginFrame();
+                RenderFrame();
+                EndFrame();
+            }
+        }
 
         public virtual void CreateResources()
         {
@@ -22,7 +36,7 @@ namespace Enigma.Graphics
         }
 
         public virtual void BeginFrame() => GraphicsDevice.Begin();
-        public virtual void Render()
+        public virtual void RenderFrame()
         {
             foreach (Scene scene in scenes.Values)
                 scene.Render(GraphicsDevice);

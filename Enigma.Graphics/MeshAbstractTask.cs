@@ -22,7 +22,7 @@
 
         public virtual void Render(IGraphicsDevice gd, MeshScene<T> scene)
         {
-            for (int i = 0; i < scene.vertexBuffers.Count; i++)
+            for (int i = 0; i < scene.VertexBuffers.Count; i++)
                 Render(gd, scene, i);
         }
 

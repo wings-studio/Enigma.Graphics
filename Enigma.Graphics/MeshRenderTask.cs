@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Numerics;
 
 namespace Enigma.Graphics
 {
@@ -66,7 +65,7 @@ out vec4 FragColor;
                 new ResourceElement("uBlue", ResourceKind.UniformBuffer, ShaderStage.Vertex)
                 );
             pipeline = gd.CreatePipeline(new[] { vs, fs }, vertexLayout, layout);
-            foreach (var mesh in scene.meshes)
+            foreach (var mesh in scene.Meshes)
                 resources.Add(gd.CreateResourceSet(layout, 
                     new Resource<float>((float)Math.Sin(DateTime.Now.Millisecond / 1000f * Math.PI)) // uBlue
                     ));
@@ -74,11 +73,11 @@ out vec4 FragColor;
 
         public override void Render(IGraphicsDevice gd, MeshScene<T> scene, int meshIndex)
         {
-            gd.SetVertexBuffer(0, scene.vertexBuffers[meshIndex]);
-            gd.SetIndexBuffer(scene.indexBuffers[meshIndex], IndexFormat.UInt);
+            gd.SetVertexBuffer(0, scene.VertexBuffers[meshIndex]);
+            gd.SetIndexBuffer(scene.IndexBuffers[meshIndex], IndexFormat.UInt);
             gd.SetPipeline(pipeline);
             gd.SetResourceSet(0, resources[meshIndex]);
-            gd.DrawIndexed(scene.indexLens[meshIndex]);
+            gd.DrawIndexed(scene.IndexLengths[meshIndex]);
         }
     }
 }

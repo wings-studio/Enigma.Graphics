@@ -24,15 +24,9 @@ namespace Enigma.Graphics.App
                     1, 2, 3
                 }
             };
-            scene.meshes.Add(mesh);
+            scene.Meshes.Add(mesh);
             renderer.Add("main", scene);
-            renderer.CreateResources();
-            while (!System.Console.KeyAvailable)
-            {
-                renderer.BeginFrame();
-                renderer.Render();
-                renderer.EndFrame();
-            }
+            renderer.Render();
         }
     }
 

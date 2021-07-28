@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-
-namespace Enigma.Graphics
+﻿namespace Enigma.Graphics
 {
-    public interface IShader
+    public interface IShader : System.IDisposable
     {
         ShaderStage Stage { get; set; }
     }
