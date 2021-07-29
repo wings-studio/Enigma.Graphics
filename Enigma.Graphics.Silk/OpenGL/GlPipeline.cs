@@ -42,10 +42,11 @@ namespace Enigma.Graphics.Silk.OpenGL
             }
             #endregion
             #region Bind vertex elements
-            for (int i = 0; i < VertexElements.Length; i++)
+            for (uint i = 0; i < VertexElements.Length; i++)
             {
                 // https://github.com/mellinoe/veldrid/blob/7c248955fb4666a6df177932d44add206636959f/src/Veldrid/OpenGL/OpenGLPipeline.cs#L125
-                gl.BindAttribLocation(GlCode, (uint)i, VertexElements[i].Name.ToGL());
+                gl.BindAttribLocation(GlCode, i, VertexElements[i].Name);
+                gl.EnableVertexAttribArray(i);
             }
             #endregion
             gl.LinkProgram(GlCode);

@@ -19,7 +19,6 @@ layout(location = 0) in vec3 vPos;
         layout(location = 1) in vec4 vColor;
 
         //This is how we declare a uniform, they can be used in all our shaders and share the same name.
-        //This is prefixed with a u as it's our uniform.
         uniform float Blue;
 
 //This is our output variable, notice that this is prefixed with an f as it's the input of our fragment shader.

@@ -45,6 +45,7 @@ namespace Enigma.Graphics.Silk.OpenGL
         public void Begin()
         {
             ClearColor(ColorOfClear);
+            Gl.Clear(ClearBufferMask.ColorBufferBit);
         }
 
         public void ClearColor(Color4 color)
@@ -189,7 +190,7 @@ namespace Enigma.Graphics.Silk.OpenGL
                 gb.Bind();
                 fixed (void* v = &data[0])
                 {
-                    Gl.BufferData(GlUtil.FromEnigmaBuffer(buffer.Usage), (nuint)(data.Length * sizeof(T)), v, BufferUsageARB.StaticDraw);
+                    Gl.BufferData(GlUtil.FromEnigmaBuffer(buffer.Usage), (nuint)Util.Sizeof(data), v, BufferUsageARB.StaticDraw);
                 }
             }
         }
@@ -279,6 +280,13 @@ namespace Enigma.Graphics.Silk.OpenGL
         /// <summary>
         /// Get location of uniform with name <see cref="resourceName"/>
         /// </summary>
-        private unsafe int GetLocation() => Gl.GetUniformLocation(pipeline.GlCode, resourceName.ToGL());
+        private unsafe int GetLocation()
+        {
+            int location = Gl.GetUniformLocation(pipeline.GlCode, resourceName);
+            if (location == -1)
+                throw new SilkGlException($"Uniform location with name {resourceName} not found");
+            else
+                return location;
+        }
     }
 }
