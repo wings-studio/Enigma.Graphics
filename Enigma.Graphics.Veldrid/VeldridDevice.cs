@@ -9,36 +9,42 @@ namespace Enigma.Graphics.Veldrid
 {
     public class VeldridDevice : IGraphicsDevice
     {
+        private GraphicsDevice Gd
+        {
+            get => gd;
+            set
+            {
+                gd = value;
+                factory = gd.ResourceFactory;
+                cl = factory.CreateCommandList();
+            }
+        }
+
         private Sdl2Window window;
-        private GraphicsDevice gd;
         private CommandList cl;
         private ResourceFactory factory;
+        private GraphicsDevice gd;
 
         public GraphicsAPI GraphicsAPI 
         { 
-            get => VeldridUtil.FromVeldridGraphicsBackend(gd.BackendType);
-            set
-            {
-                gd = VeldridStartup.CreateGraphicsDevice(window, VeldridUtil.FromEnigmaGraphicsAPI(value));
-                Init();
-            }
+            get => VeldridUtil.FromVeldridGraphicsBackend(Gd.BackendType);
+            set => Gd = VeldridStartup.CreateGraphicsDevice(window, VeldridUtil.FromEnigmaGraphicsAPI(value));
         }
 
         public VeldridDevice()
         {
-            VeldridStartup.CreateWindowAndGraphicsDevice(new WindowCreateInfo(), out window, out gd);
+            VeldridStartup.CreateWindowAndGraphicsDevice(new WindowCreateInfo(), out window, out GraphicsDevice _gd);
+            Gd = _gd; // gd is property so we can't write in method upper: out gd, but we need to run setter of gd so we assign it here
         }
 
         public VeldridDevice(GraphicsDevice graphicsDevice)
         {
-            gd = graphicsDevice;
-            Init();
+            Gd = graphicsDevice;
         }
 
         public VeldridDevice(GraphicsBackend graphicsBackend)
         {
-            gd = VeldridStartup.CreateGraphicsDevice(window, graphicsBackend);
-            Init();
+            Gd = VeldridStartup.CreateGraphicsDevice(window, graphicsBackend);
         }
 
         public VeldridDevice(GraphicsAPI graphicsAPI)
@@ -52,14 +58,10 @@ namespace Enigma.Graphics.Veldrid
         }
 
         public void ClearColor(Color4 color)
-        {
-            cl.ClearColorTarget(0, new RgbaFloat(color));
-        }
+            => cl.ClearColorTarget(0, new RgbaFloat(color));
 
         public IBuffer CreateBuffer(int size, BufferUsage usage)
-        {
-            throw new NotImplementedException();
-        }
+            => new VeldridBuffer(factory.CreateBuffer(new BufferDescription((uint)size, VeldridUtil.FromEnigmaBuffer(usage))));
 
         public Pipeline CreatePipeline(IShader[] shaders, VertexElement[] vertexElements, params ResourceLayout[] resources)
         {
@@ -79,34 +81,26 @@ namespace Enigma.Graphics.Veldrid
         public void Dispose()
         {
             cl.Dispose();
-            gd.Dispose();
+            Gd.Dispose();
         }
 
         public void Draw(uint vertexCount, uint instanceCount = 1, uint vertexStart = 0, uint instanceStart = 0)
-        {
-            cl.Draw(vertexCount, instanceCount, vertexStart, instanceStart);
-        }
+            => cl.Draw(vertexCount, instanceCount, vertexStart, instanceStart);
 
         public void DrawIndexed(uint indexCount, uint instanceCount = 1, uint indexStart = 0, int vertexOffset = 0, uint instanceStart = 0)
-        {
-            cl.DrawIndexed(indexCount, instanceStart, indexStart, vertexOffset, instanceStart);
-        }
+            => cl.DrawIndexed(indexCount, instanceStart, indexStart, vertexOffset, instanceStart);
 
         public void DrawIndexedIndirect(IBuffer indirectBuffer, uint offset, uint drawCount, uint stride)
-        {
-            throw new NotImplementedException();
-        }
+            => cl.DrawIndexedIndirect(GetDeviceBuffer(indirectBuffer), offset, drawCount, stride);
 
-        public void DrawIndirect(IBuffer indirectBuffer, uint offset, uint drawCount, uint stride)
-        {
-            throw new NotImplementedException();
-        }
+        public void DrawIndirect(IBuffer indirectBuffer, uint offset, uint drawCount, uint stride) 
+            => cl.DrawIndirect(GetDeviceBuffer(indirectBuffer), offset, drawCount, stride);
 
         public void End()
         {
             cl.End();
-            gd.SubmitCommands(cl);
-            gd.WaitForIdle();
+            Gd.SubmitCommands(cl);
+            Gd.WaitForIdle();
         }
 
         public IShader LoadShader(byte[] shader, ShaderStage stage)
@@ -119,10 +113,8 @@ namespace Enigma.Graphics.Veldrid
             throw new NotImplementedException();
         }
 
-        public void SetIndexBuffer(IBuffer indexBuffer, IndexFormat format, uint offset = 0)
-        {
-            throw new NotImplementedException();
-        }
+        public void SetIndexBuffer(IBuffer indexBuffer, IndexFormat format, uint offset = 0) 
+            => cl.SetIndexBuffer(GetDeviceBuffer(indexBuffer), VeldridUtil.FromEnigmaIndex(format), offset);
 
         public void SetPipeline(Pipeline pipeline)
         {
@@ -134,85 +126,58 @@ namespace Enigma.Graphics.Veldrid
             throw new NotImplementedException();
         }
 
-        public void SetUniform1(int value)
-        {
-            throw new NotImplementedException();
-        }
+        public void SetUniform1(int value) { }
 
-        public void SetUniform1(double value)
-        {
-            throw new NotImplementedException();
-        }
+        public void SetUniform1(double value) { }
 
-        public void SetUniform1(float value)
-        {
-            throw new NotImplementedException();
-        }
+        public void SetUniform1(float value) { }
 
-        public void SetUniform2(Vector2 value)
-        {
-            throw new NotImplementedException();
-        }
+        public void SetUniform2(Vector2 value) { }
 
-        public void SetUniform3(Vector3 value)
-        {
-            throw new NotImplementedException();
-        }
+        public void SetUniform3(Vector3 value) { }
 
-        public void SetUniform4(Vector4 value)
-        {
-            throw new NotImplementedException();
-        }
+        public void SetUniform4(Vector4 value) { }
 
-        public void SetUniformBuffer(IBuffer buffer)
-        {
-            throw new NotImplementedException();
-        }
+        public void SetUniformBuffer(IBuffer buffer) { }
 
-        public void SetUniformMatrix3x2(Matrix3x2 matrix)
-        {
-            throw new NotImplementedException();
-        }
+        public void SetUniformMatrix3x2(Matrix3x2 matrix) { }
 
-        public void SetUniformMatrix4x4(Matrix4x4 matrix)
-        {
-            throw new NotImplementedException();
-        }
+        public void SetUniformMatrix4x4(Matrix4x4 matrix) { }
 
-        public void SetVertexBuffer(uint index, IBuffer vertexBuffer, uint offset = 0)
-        {
-            throw new NotImplementedException();
-        }
+        public void SetVertexBuffer(uint index, IBuffer vertexBuffer, uint offset = 0) 
+            => cl.SetVertexBuffer(index, GetDeviceBuffer(vertexBuffer), offset);
 
         public void UpdateBuffer<T>(IBuffer buffer, T[] data, uint offsetInBytes = 0) where T : unmanaged
         {
-            throw new NotImplementedException();
+            cl.UpdateBuffer(GetDeviceBuffer(buffer), offsetInBytes, data);
         }
 
         public void UpdateBuffer<T>(IBuffer buffer, T data, uint offsetInBytes = 0) where T : unmanaged
         {
-            throw new NotImplementedException();
+            cl.UpdateBuffer(GetDeviceBuffer(buffer), offsetInBytes, data);
         }
 
         public void UpdateBuffer<T>(IBuffer buffer, ref T data, uint offsetInBytes = 0) where T : unmanaged
         {
-            throw new NotImplementedException();
+            cl.UpdateBuffer(GetDeviceBuffer(buffer), offsetInBytes, ref data);
         }
 
         public void UpdateBuffer(IBuffer buffer, IntPtr data, int sizeInBytes, uint offsetInBytes = 0)
         {
-            throw new NotImplementedException();
+            cl.UpdateBuffer(GetDeviceBuffer(buffer), offsetInBytes, data, (uint)sizeInBytes);
         }
 
         public void UpdateBuffer<T>(IBuffer buffer, ReadOnlySpan<T> source, uint offsetInBytes = 0) where T : unmanaged
         {
-            throw new NotImplementedException();
+            cl.UpdateBuffer(GetDeviceBuffer(buffer), offsetInBytes, source);
         }
 
-        private void Init()
+        private static DeviceBuffer GetDeviceBuffer(IBuffer buffer)
         {
-            factory = gd.ResourceFactory;
-            cl = factory.CreateCommandList();
+            if (buffer is VeldridBuffer vBuffer)
+                return vBuffer.DeviceBuffer;
+            else
+                throw new EnigmaVeldridException($"Buffer is not {nameof(VeldridBuffer)} so it cannot be using in this renderer");
         }
     }
 }
