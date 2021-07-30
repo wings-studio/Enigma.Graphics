@@ -4,13 +4,18 @@
     {
         public VeldridRenderer()
         {
-            GraphicsDevice = new VeldridDevice();
+            SetupVeldridDevice(new VeldridDevice());
         }
 
         public VeldridRenderer(GraphicsAPI graphicsAPI)
         {
-            GraphicsDevice = new VeldridDevice(graphicsAPI);
+            SetupVeldridDevice(new VeldridDevice(graphicsAPI));
         }
 
+        private void SetupVeldridDevice(VeldridDevice veldridDevice)
+        {
+            veldridDevice.Window.Closed += () => IsRunning = false;
+            GraphicsDevice = veldridDevice;
+        }
     }
 }

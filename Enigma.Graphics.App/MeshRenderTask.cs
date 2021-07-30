@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Enigma.Graphics
+namespace Enigma.Graphics.App
 {
-    public class MeshRenderTask<T> : MeshAbstractTask<T> where T : unmanaged
+    public class MeshRenderTask : MeshAbstractTask<VertexColorPosition>
     {
         private Pipeline pipeline;
         private readonly List<ResourceSet> resources = new List<ResourceSet>();
@@ -51,7 +51,7 @@ out vec4 FragColor;
             FragColor = fColor;
         }";
 
-        public override void CreateResources(IGraphicsDevice gd, MeshScene<T> scene)
+        public override void CreateResources(IGraphicsDevice gd, MeshScene<VertexColorPosition> scene)
         {
             IShader vs = gd.LoadShader(VertexShaderSource, ShaderStage.Vertex);
             IShader fs = gd.LoadShader(FragmentShaderSource, ShaderStage.Fragment);
@@ -70,7 +70,7 @@ out vec4 FragColor;
                     ));
         }
 
-        public override void Render(IGraphicsDevice gd, MeshScene<T> scene, int meshIndex)
+        public override void Render(IGraphicsDevice gd, MeshScene<VertexColorPosition> scene, int meshIndex)
         {
             gd.SetVertexBuffer(0, scene.VertexBuffers[meshIndex]);
             gd.SetIndexBuffer(scene.IndexBuffers[meshIndex], IndexFormat.UInt);

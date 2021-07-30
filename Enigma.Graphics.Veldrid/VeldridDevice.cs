@@ -9,6 +9,8 @@ namespace Enigma.Graphics.Veldrid
 {
     public class VeldridDevice : IGraphicsDevice
     {
+        internal Sdl2Window Window;
+
         private GraphicsDevice Gd
         {
             get => gd;
@@ -20,7 +22,6 @@ namespace Enigma.Graphics.Veldrid
             }
         }
 
-        private Sdl2Window window;
         private CommandList cl;
         private ResourceFactory factory;
         private GraphicsDevice gd;
@@ -28,12 +29,12 @@ namespace Enigma.Graphics.Veldrid
         public GraphicsAPI GraphicsAPI 
         { 
             get => VeldridUtil.FromVeldridGraphicsBackend(Gd.BackendType);
-            set => Gd = VeldridStartup.CreateGraphicsDevice(window, VeldridUtil.FromEnigmaGraphicsAPI(value));
+            set => Gd = VeldridStartup.CreateGraphicsDevice(Window, VeldridUtil.FromEnigmaGraphicsAPI(value));
         }
 
         public VeldridDevice()
         {
-            VeldridStartup.CreateWindowAndGraphicsDevice(new WindowCreateInfo(), out window, out GraphicsDevice _gd);
+            VeldridStartup.CreateWindowAndGraphicsDevice(new WindowCreateInfo(), out Window, out GraphicsDevice _gd);
             Gd = _gd; // gd is property so we can't write in method upper: out gd, but we need to run setter of gd so we assign it here
         }
 
@@ -44,7 +45,7 @@ namespace Enigma.Graphics.Veldrid
 
         public VeldridDevice(GraphicsBackend graphicsBackend)
         {
-            Gd = VeldridStartup.CreateGraphicsDevice(window, graphicsBackend);
+            Gd = VeldridStartup.CreateGraphicsDevice(Window, graphicsBackend);
         }
 
         public VeldridDevice(GraphicsAPI graphicsAPI)

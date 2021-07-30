@@ -14,7 +14,6 @@ namespace Enigma.Graphics
 
         public MeshScene()
         {
-            AddRenderTask<MeshRenderTask<T>>();
         }
 
         public override void AddRenderTask<R>(R renderTask)
