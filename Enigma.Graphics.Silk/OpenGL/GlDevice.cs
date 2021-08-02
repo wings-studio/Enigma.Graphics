@@ -7,24 +7,22 @@ using Vortice.Mathematics;
 
 namespace Enigma.Graphics.Silk.OpenGL
 {
-    public sealed class GlDevice : IGraphicsDevice
+    public sealed class GlDevice : GraphicsDevice
     {
         public GL Gl;
         public IWindow Window;
-        public Color4 ColorOfClear;
 
         private GlPipeline pipeline;
         private PrimitiveType primitive;
         private DrawElementsType indexType;
         private PolygonMode fillMode;
         private uint ibOffset = 0;
-        private string resourceName = "";
 
         public GlDevice(IWindow window)
         {
             Window = window;
             Window.Load += OnLoad;
-            ColorOfClear = Color4.Blue;
+            ColorForClear = Color4.SkyBlue;
         }
 
         private void OnLoad()
@@ -32,7 +30,7 @@ namespace Enigma.Graphics.Silk.OpenGL
             Gl = GL.GetApi(Window);
         }
 
-        public GraphicsAPI GraphicsAPI
+        public override GraphicsAPI GraphicsAPI
         {
             get => GraphicsAPI.OpenGL;
             set
@@ -42,18 +40,18 @@ namespace Enigma.Graphics.Silk.OpenGL
             }
         }
 
-        public void Begin()
+        public override void Begin()
         {
-            ClearColor(ColorOfClear);
+            base.Begin();
             Gl.Clear(ClearBufferMask.ColorBufferBit);
         }
 
-        public void ClearColor(Color4 color)
+        public override void ClearColor(Color4 color)
         {
             Gl.ClearColor((System.Drawing.Color)color);
         }
 
-        public IBuffer CreateBuffer(int size, BufferUsage usage)
+        public override IBuffer CreateBuffer(int size, BufferUsage usage)
         {
             if (usage == BufferUsage.VertexBuffer)
                 return new GlVertexArray(Gl, size);
@@ -61,17 +59,12 @@ namespace Enigma.Graphics.Silk.OpenGL
                 return new GlBuffer(Gl, size, usage);
         }
 
-        public ResourceSet CreateResourceSet(ResourceLayout layout, params IResource[] resources)
-        {
-            return new ResourceSet(layout, resources);
-        }
-
-        public void Dispose()
+        public override void Dispose()
         {
             Gl.Dispose();
         }
 
-        public void Draw(uint vertexCount, uint instanceCount = 1, uint vertexStart = 0, uint instanceStart = 0)
+        public override void Draw(uint vertexCount, uint instanceCount = 1, uint vertexStart = 0, uint instanceStart = 0)
         {
             // https://github.com/mellinoe/veldrid/blob/7c248955fb4666a6df177932d44add206636959f/src/Veldrid/OpenGL/OpenGLCommandExecutor.cs#L123
             if (instanceCount == 1 && instanceStart == 0)
@@ -91,7 +84,7 @@ namespace Enigma.Graphics.Silk.OpenGL
             }
         }
 
-        public unsafe void DrawIndexed(uint indexCount, uint instanceCount = 1, uint indexStart = 0, int vertexOffset = 0, uint instanceStart = 0)
+        public unsafe override void DrawIndexed(uint indexCount, uint instanceCount = 1, uint indexStart = 0, int vertexOffset = 0, uint instanceStart = 0)
         {
             // https://github.com/mellinoe/veldrid/blob/7c248955fb4666a6df177932d44add206636959f/src/Veldrid/OpenGL/OpenGLCommandExecutor.cs#L143
             uint indexSize = indexType == DrawElementsType.UnsignedShort ? 2u : 4u;
@@ -137,11 +130,7 @@ namespace Enigma.Graphics.Silk.OpenGL
             }
         }
 
-        public void End()
-        {
-        }
-
-        public void SetIndexBuffer(IBuffer indexBuffer, IndexFormat format, uint offset = 0)
+        public override void SetIndexBuffer(IBuffer indexBuffer, IndexFormat format, uint offset = 0)
         {
             indexType = GlUtil.FromEnigmaIndex(format);
             ibOffset = offset;
@@ -151,7 +140,7 @@ namespace Enigma.Graphics.Silk.OpenGL
                 throw new SilkGlException($"Buffer must has type {nameof(GlBuffer)}");
         }
 
-        public void SetPipeline(Pipeline pipeline)
+        public override void SetPipeline(Pipeline pipeline)
         {
             primitive = GlUtil.FromEnigmaPrimtive(pipeline.Topology);
             fillMode = GlUtil.FromEnigmaPolygon(pipeline.FillMode);
@@ -166,16 +155,7 @@ namespace Enigma.Graphics.Silk.OpenGL
             }
         }
 
-        public unsafe void SetResourceSet(int index, ResourceSet resourceSet)
-        {
-            for (int i = 0; i < resourceSet.Resources.Length; i++)
-            {
-                resourceName = resourceSet.Layout.Elements[i].Name;
-                resourceSet.Resources[i].SetResources(this);
-            }
-        }
-
-        public void SetVertexBuffer(uint index, IBuffer vertexBuffer, uint offset = 0)
+        public override void SetVertexBuffer(uint index, IBuffer vertexBuffer, uint offset = 0)
         {
             if (vertexBuffer is GlVertexArray gvb)
                 Gl.BindVertexArray(gvb.GlArrayCode);
@@ -183,7 +163,7 @@ namespace Enigma.Graphics.Silk.OpenGL
                 throw new SilkGlException($"{nameof(vertexBuffer)} must be {nameof(GlVertexArray)} type");
         }
 
-        public unsafe void UpdateBuffer<T>(IBuffer buffer, T[] data, uint offsetInBytes = 0) where T : unmanaged
+        public unsafe override void UpdateBuffer<T>(IBuffer buffer, T[] data, uint offsetInBytes = 0)
         {
             if (buffer is GlBuffer gb)
             {
@@ -195,7 +175,7 @@ namespace Enigma.Graphics.Silk.OpenGL
             }
         }
 
-        public unsafe void UpdateBuffer<T>(IBuffer buffer, T data, uint offsetInBytes = 0) where T : unmanaged
+        public unsafe override void UpdateBuffer<T>(IBuffer buffer, T data, uint offsetInBytes = 0)
         {
             if (buffer is GlBuffer gb)
             {
@@ -205,12 +185,12 @@ namespace Enigma.Graphics.Silk.OpenGL
             }
         }
 
-        public void UpdateBuffer<T>(IBuffer buffer, ref T data, uint offsetInBytes = 0) where T : unmanaged
+        public override void UpdateBuffer<T>(IBuffer buffer, ref T data, uint offsetInBytes = 0)
         {
             UpdateBuffer(buffer, data, offsetInBytes);
         }
 
-        public unsafe void UpdateBuffer(IBuffer buffer, IntPtr data, int sizeInBytes, uint offsetInBytes = 0)
+        public unsafe override void UpdateBuffer(IBuffer buffer, IntPtr data, int sizeInBytes, uint offsetInBytes = 0)
         {
             if (buffer is GlBuffer gb)
             {
@@ -220,67 +200,67 @@ namespace Enigma.Graphics.Silk.OpenGL
             }
         }
 
-        public void UpdateBuffer<T>(IBuffer buffer, ReadOnlySpan<T> source, uint offsetInBytes = 0) where T : unmanaged
+        public override void UpdateBuffer<T>(IBuffer buffer, ReadOnlySpan<T> source, uint offsetInBytes = 0)
         {
             throw new NotImplementedException();
         }
 
-        public IShader LoadShader(byte[] shader, ShaderStage stage) => new GlShader(Gl, shader, stage);
+        public override IShader LoadShader(byte[] shader, ShaderStage stage) => new GlShader(Gl, shader, stage);
 
-        public IShader LoadShader(string shader, ShaderStage stage) => new GlShader(Gl, shader, stage);
+        public override IShader LoadShader(string shader, ShaderStage stage) => new GlShader(Gl, shader, stage);
 
-        public Pipeline CreatePipeline(IShader[] shaders, VertexElement[] vertexElements, params ResourceLayout[] resources)
+        public override Pipeline CreatePipeline(IShader[] shaders, VertexElement[] vertexElements, params ResourceLayout[] resources)
             => new GlPipeline(Gl, shaders, vertexElements, resources);
 
-        public Pipeline CreatePipeline(PrimitiveTopology topology, PolygonFillMode fillMode, IShader[] shaders, VertexElement[] vertexElements, params ResourceLayout[] resources)
+        public override Pipeline CreatePipeline(PrimitiveTopology topology, PolygonFillMode fillMode, IShader[] shaders, VertexElement[] vertexElements, params ResourceLayout[] resources)
             => new GlPipeline(Gl, topology, fillMode, shaders, vertexElements, resources);
 
-        public void DrawIndirect(IBuffer indirectBuffer, uint offset, uint drawCount, uint stride)
+        public override void DrawIndirect(IBuffer indirectBuffer, uint offset, uint drawCount, uint stride)
         {
             throw new NotImplementedException();
         }
 
-        public void DrawIndexedIndirect(IBuffer indirectBuffer, uint offset, uint drawCount, uint stride)
+        public override void DrawIndexedIndirect(IBuffer indirectBuffer, uint offset, uint drawCount, uint stride)
         {
             throw new NotImplementedException();
         }
 
-        public void SetUniform1(int value) => Gl.Uniform1(GetLocation(), value);
+        public override void SetUniform1(string resourceName, int value) => Gl.Uniform1(GetLocation(resourceName), value);
 
-        public void SetUniform1(double value) => Gl.Uniform1(GetLocation(), value);
+        public override void SetUniform1(string resourceName, double value) => Gl.Uniform1(GetLocation(resourceName), value);
 
-        public void SetUniform1(float value) => Gl.Uniform1(GetLocation(), value);
+        public override void SetUniform1(string resourceName, float value) => Gl.Uniform1(GetLocation(resourceName), value);
 
-        public void SetUniform2(Vector2 value) => Gl.Uniform2(GetLocation(), value);
+        public override void SetUniform2(string resourceName, Vector2 value) => Gl.Uniform2(GetLocation(resourceName), value);
 
-        public void SetUniform3(Vector3 value) => Gl.Uniform3(GetLocation(), value);
+        public override void SetUniform3(string resourceName, Vector3 value) => Gl.Uniform3(GetLocation(resourceName), value);
 
-        public void SetUniform4(Vector4 value) => Gl.Uniform4(GetLocation(), value);
+        public override void SetUniform4(string resourceName, Vector4 value) => Gl.Uniform4(GetLocation(resourceName), value);
 
-        public void SetUniformMatrix4x4(Matrix4x4 matrix) 
-            => Gl.UniformMatrix4(GetLocation(), transpose: false, new ReadOnlySpan<float>(new float[] {
+        public override void SetUniformMatrix4x4(string resourceName, Matrix4x4 matrix) 
+            => Gl.UniformMatrix4(GetLocation(resourceName), transpose: false, new ReadOnlySpan<float>(new float[] {
                 matrix.M11, matrix.M12, matrix.M13, matrix.M14,
                 matrix.M21, matrix.M22, matrix.M23, matrix.M24,
                 matrix.M31, matrix.M32, matrix.M33, matrix.M34,
                 matrix.M41, matrix.M42, matrix.M43, matrix.M44
             }));
 
-        public void SetUniformMatrix3x2(Matrix3x2 matrix)
-            => Gl.UniformMatrix3x2(GetLocation(), transpose: false, new ReadOnlySpan<float>(new float[] {
+        public override void SetUniformMatrix3x2(string resourceName, Matrix3x2 matrix)
+            => Gl.UniformMatrix3x2(GetLocation(resourceName), transpose: false, new ReadOnlySpan<float>(new float[] {
                 matrix.M11, matrix.M12,
                 matrix.M21, matrix.M22,
                 matrix.M31, matrix.M32
             }));
 
-        public void SetUniformBuffer(IBuffer buffer)
+        public override void SetUniformBuffer(string resourceName, IBuffer buffer)
         {
             throw new NotImplementedException();
         }
 
         /// <summary>
-        /// Get location of uniform with name <see cref="resourceName"/>
+        /// Get location of uniform with name <param cref="resourceName"/>
         /// </summary>
-        private unsafe int GetLocation()
+        private unsafe int GetLocation(string resourceName)
         {
             int location = Gl.GetUniformLocation(pipeline.GlCode, resourceName);
             if (location == -1)

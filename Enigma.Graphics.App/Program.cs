@@ -1,16 +1,12 @@
-﻿using System.Numerics;
-using Enigma.Graphics.Silk;
-using Enigma.Graphics.Veldrid;
-
-namespace Enigma.Graphics.App
+﻿namespace Enigma.Graphics.App
 {
-    class Program
+    static class Program
     {
         static void Main(string[] args)
         {
             Renderer renderer =
-                //new SilkRenderer();
-                new VeldridRenderer();
+                //new Silk.SilkRenderer();
+                new Veldrid.VeldridRenderer();
             MeshScene<VertexColorPosition> scene = new MeshScene<VertexColorPosition>();
             Mesh<VertexColorPosition> mesh = new Mesh<VertexColorPosition>()
             {
@@ -30,6 +26,7 @@ namespace Enigma.Graphics.App
             scene.Meshes.Add(mesh);
             scene.AddRenderTask<MeshRenderTask>();
             renderer.Add("main", scene);
+            renderer.ClearColor = Vortice.Mathematics.Color4.LightSkyBlue;
             renderer.Render();
         }
     }

@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Enigma.Graphics.Silk\Enigma.Graphics.Silk.csproj" />
+    <ProjectReference Include="..\Enigma.Graphics.Veldrid\Enigma.Graphics.Veldrid.csproj" />
   </ItemGroup>
 
 </Project>

@@ -11,7 +11,7 @@ namespace Enigma.Graphics.Veldrid
     {
         internal Sdl2Window Window;
 
-        private GraphicsDevice Gd
+        private global::Veldrid.GraphicsDevice Gd
         {
             get => gd;
             set
@@ -24,21 +24,22 @@ namespace Enigma.Graphics.Veldrid
 
         private CommandList cl;
         private ResourceFactory factory;
-        private GraphicsDevice gd;
+        private global::Veldrid.GraphicsDevice gd;
 
         public GraphicsAPI GraphicsAPI 
         { 
             get => VeldridUtil.FromVeldridGraphicsBackend(Gd.BackendType);
             set => Gd = VeldridStartup.CreateGraphicsDevice(Window, VeldridUtil.FromEnigmaGraphicsAPI(value));
         }
+        public Color4 ColorForClear { get; set; }
 
         public VeldridDevice()
         {
-            VeldridStartup.CreateWindowAndGraphicsDevice(new WindowCreateInfo(), out Window, out GraphicsDevice _gd);
+            VeldridStartup.CreateWindowAndGraphicsDevice(new WindowCreateInfo(), out Window, out global::Veldrid.GraphicsDevice _gd);
             Gd = _gd; // gd is property so we can't write in method upper: out gd, but we need to run setter of gd so we assign it here
         }
 
-        public VeldridDevice(GraphicsDevice graphicsDevice)
+        public VeldridDevice(global::Veldrid.GraphicsDevice graphicsDevice)
         {
             Gd = graphicsDevice;
         }
@@ -56,6 +57,7 @@ namespace Enigma.Graphics.Veldrid
         public void Begin()
         {
             cl.Begin();
+            ClearColor(ColorForClear);
         }
 
         public void ClearColor(Color4 color)
@@ -65,17 +67,14 @@ namespace Enigma.Graphics.Veldrid
             => new VeldridBuffer(factory.CreateBuffer(new BufferDescription((uint)size, VeldridUtil.FromEnigmaBuffer(usage))));
 
         public Pipeline CreatePipeline(IShader[] shaders, VertexElement[] vertexElements, params ResourceLayout[] resources)
-        {
-            throw new NotImplementedException();
-        }
+            => new VeldridPipeline(factory, shaders, vertexElements, resources);
 
         public Pipeline CreatePipeline(PrimitiveTopology topology, PolygonFillMode fillMode, IShader[] shaders, VertexElement[] vertexElements, params ResourceLayout[] resources)
-        {
-            throw new NotImplementedException();
-        }
+            => new VeldridPipeline(factory, topology, fillMode, shaders, vertexElements, resources);
 
         public ResourceSet CreateResourceSet(ResourceLayout layout, params IResource[] resources)
         {
+
             throw new NotImplementedException();
         }
 
@@ -119,7 +118,10 @@ namespace Enigma.Graphics.Veldrid
 
         public void SetPipeline(Pipeline pipeline)
         {
-            throw new NotImplementedException();
+            if (pipeline is VeldridPipeline vdPipeline)
+                cl.SetPipeline(vdPipeline.VdPipeline);
+            else
+                throw new EnigmaVeldridException($"Pipeline is not {nameof(VeldridPipeline)} so it cannot be using");
         }
 
         public void SetResourceSet(int index, ResourceSet resourceSet)
@@ -172,6 +174,9 @@ namespace Enigma.Graphics.Veldrid
         {
             cl.UpdateBuffer(GetDeviceBuffer(buffer), offsetInBytes, source);
         }
+
+        public ResourceLayout CreateResourceLayout(params ResourceElement[] elements)
+            => new VeldridResourceLayout(factory, elements);
 
         private static DeviceBuffer GetDeviceBuffer(IBuffer buffer)
         {

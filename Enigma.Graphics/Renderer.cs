@@ -12,6 +12,8 @@ namespace Enigma.Graphics
         protected readonly Dictionary<string, Scene> scenes = new Dictionary<string, Scene>();
 
         public GraphicsAPI GraphicsAPI { get => GraphicsDevice.GraphicsAPI; set => GraphicsDevice.GraphicsAPI = value; }
+        public Vortice.Mathematics.Color4 ClearColor 
+        { get => GraphicsDevice.ColorForClear; set => GraphicsDevice.ColorForClear = value; }
 
         public IGraphicsDevice GraphicsDevice { get; protected set; }
 

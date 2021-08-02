@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Numerics;
+using Vortice.Mathematics;
 
 namespace Enigma.Graphics
 {
     public interface IGraphicsDevice : IDisposable
     {
         GraphicsAPI GraphicsAPI { get; set; }
+        Color4 ColorForClear { get; set; }
 
         #region Resources, shaders and pipelines
+        ResourceLayout CreateResourceLayout(params ResourceElement[] elements);
         ResourceSet CreateResourceSet(ResourceLayout layout, params IResource[] resources);
         void SetResourceSet(int index, ResourceSet resourceSet);
         Pipeline CreatePipeline(IShader[] shaders, VertexElement[] vertexElements, params ResourceLayout[] resources);
@@ -63,7 +66,7 @@ namespace Enigma.Graphics
         void SetUniformBuffer(IBuffer buffer);
         #endregion
 
-        void ClearColor(Vortice.Mathematics.Color4 color);
+        void ClearColor(Color4 color);
         void Begin();
         void End();
     }

@@ -71,5 +71,57 @@ namespace Enigma.Graphics.Veldrid
                 _ => 0
             };
         }
+
+        public static global::Veldrid.PolygonFillMode FromEnigmaPolygon(PolygonFillMode fillMode)
+        {
+            return fillMode switch
+            {
+                PolygonFillMode.Solid => global::Veldrid.PolygonFillMode.Solid,
+                PolygonFillMode.Wireframe => global::Veldrid.PolygonFillMode.Wireframe,
+                _ => 0
+            };
+        }
+
+        public static global::Veldrid.PrimitiveTopology FromEnigmaPrimitive(PrimitiveTopology primitive)
+        {
+            return primitive switch
+            {
+                PrimitiveTopology.TriangleList => global::Veldrid.PrimitiveTopology.TriangleList,
+                PrimitiveTopology.TriangleStrip => global::Veldrid.PrimitiveTopology.TriangleStrip,
+                PrimitiveTopology.LineList => global::Veldrid.PrimitiveTopology.LineList,
+                PrimitiveTopology.LineStrip => global::Veldrid.PrimitiveTopology.LineStrip,
+                PrimitiveTopology.PointList => global::Veldrid.PrimitiveTopology.PointList,
+                _ => 0
+            };
+        }
+
+        public static global::Veldrid.ResourceKind FromEnigmaResource(ResourceKind resourceKind)
+        {
+            return resourceKind switch
+            {
+                ResourceKind.UniformBuffer => global::Veldrid.ResourceKind.UniformBuffer,
+                ResourceKind.StructuredBufferReadOnly => global::Veldrid.ResourceKind.StructuredBufferReadOnly,
+                ResourceKind.StructuredBufferReadWrite => global::Veldrid.ResourceKind.StructuredBufferReadWrite,
+                ResourceKind.TextureReadOnly => global::Veldrid.ResourceKind.TextureReadOnly,
+                ResourceKind.TextureReadWrite => global::Veldrid.ResourceKind.TextureReadWrite,
+                ResourceKind.Sampler => global::Veldrid.ResourceKind.Sampler,
+                _ => 0
+            };
+        }
+
+        public static ShaderStages FromEnigmaShader(ShaderStage shader)
+        {
+            return shader switch
+            {
+                ShaderStage.None => ShaderStages.None,
+                ShaderStage.Vertex => ShaderStages.Vertex,
+                ShaderStage.Geometry => ShaderStages.Geometry,
+                ShaderStage.TessellationControl => ShaderStages.TessellationControl,
+                ShaderStage.TessellationEvaluation => ShaderStages.TessellationEvaluation,
+                ShaderStage.Fragment => ShaderStages.Fragment,
+                ShaderStage.Compute => ShaderStages.Compute,
+                _ => ShaderStages.None
+            };
+        }
     }
 }
